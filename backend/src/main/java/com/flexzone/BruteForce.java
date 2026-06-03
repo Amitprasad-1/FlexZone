@@ -64,7 +64,7 @@ public class BruteForce {
             return;
         }
         
-        ExecutorService executor = Executors.newFixedThreadPool(4);
+        ExecutorService executor = Executors.newFixedThreadPool(30);
         
         for (String[] task : tasks) {
             executor.submit(() -> {
