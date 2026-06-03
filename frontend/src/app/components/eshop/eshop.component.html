@@ -1,0 +1,248 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Title Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
+    <div>
+      <h1 class="text-3xl font-extrabold text-white">Supplement & Membership E-Shop</h1>
+      <p class="text-slate-400 text-sm mt-1">Upgrade your gym membership package or buy premium wellness supplements and gear.</p>
+    </div>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 space-y-4">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-amber-400 border-slate-800"></div>
+    <p class="text-slate-400 text-xs">Loading shop catalog...</p>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="errorMessage" class="p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-sm flex justify-between items-center">
+    <span>{{ errorMessage }}</span>
+    <button (click)="errorMessage = ''" class="text-xs hover:text-white">&times;</button>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      
+      <!-- Supplement Catalog & plans (Left + Center columns) -->
+      <div class="lg:col-span-3 space-y-8">
+        
+        <!-- MEMBERSHIP RENEWALS SECTION -->
+        <div class="space-y-4">
+          <h2 class="text-base font-bold text-white uppercase tracking-wider">Gym Membership Plans</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div *ngFor="let plan of plans" class="p-5 rounded-2xl glass-panel border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all">
+              <div class="space-y-2">
+                <div class="flex justify-between items-start">
+                  <h3 class="font-extrabold text-white text-base">{{ plan.name }}</h3>
+                  <span class="text-[9px] uppercase font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                    {{ plan.durationDays }} Days
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 leading-relaxed">{{ plan.description }}</p>
+              </div>
+
+              <div class="space-y-3">
+                <p class="text-2xl font-extrabold text-white">₹{{ plan.price | number:'1.2-2' }}</p>
+                <button 
+                  *ngIf="authService.isLoggedIn() && authService.getRole() === 'MEMBER'"
+                  (click)="openPlanRenewal(plan)"
+                  class="btn-gold text-[11px] w-full py-2 font-bold"
+                >
+                  Buy/Renew Plan
+                </button>
+                <span *ngIf="!authService.isLoggedIn() || authService.getRole() !== 'MEMBER'" class="text-[10px] text-slate-600 block text-center italic">Sign in as member to renew</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRODUCTS CATALOG -->
+        <div class="space-y-4">
+          <h2 class="text-base font-bold text-white uppercase tracking-wider">Supplements & Merchandise</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div *ngFor="let prod of products" class="p-5 rounded-2xl glass-panel border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all">
+              <div class="space-y-3">
+                <!-- Mock Image wrapper -->
+                <div class="aspect-[4/3] bg-slate-950 rounded-xl flex items-center justify-center border border-slate-800 text-slate-700 overflow-hidden relative">
+                  <svg class="h-10 w-10 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  <span *ngIf="prod.stock <= 0" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center text-xs font-bold text-red-500 uppercase tracking-widest">
+                    Out of Stock
+                  </span>
+                </div>
+
+                <div class="space-y-1">
+                  <h3 class="font-bold text-white text-sm truncate">{{ prod.name }}</h3>
+                  <p class="text-xs text-slate-400 line-clamp-2">{{ prod.description }}</p>
+                  <p class="text-[10px] text-slate-500">In stock: {{ prod.stock }} units</p>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center pt-2">
+                <span class="text-base font-bold text-white">₹{{ prod.price | number:'1.2-2' }}</span>
+                <button 
+                  *ngIf="authService.isLoggedIn() && authService.getRole() === 'MEMBER' && prod.stock > 0"
+                  (click)="addToCart(prod)"
+                  class="btn-gold text-[10px] px-3 py-1.5 font-bold"
+                >
+                  Add to Cart
+                </button>
+                <span *ngIf="prod.stock <= 0" class="text-[10px] text-red-400 font-bold">SOLD OUT</span>
+                <span *ngIf="authService.getRole() !== 'MEMBER'" class="text-[10px] text-slate-600 italic">Member access only</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Cart Sidebar (Right column) -->
+      <div class="lg:col-span-1">
+        <div class="p-6 rounded-2xl glass-panel space-y-5 h-fit sticky top-24">
+          <h2 class="text-base font-bold text-white uppercase tracking-wider flex items-center justify-between">
+            <span>Your Cart</span>
+            <span class="text-xs bg-amber-400 text-slate-950 font-bold px-2 py-0.5 rounded-full">{{ cart.length }}</span>
+          </h2>
+
+          <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
+            <div *ngIf="cart.length === 0" class="text-center text-slate-500 text-xs py-16">
+              Your cart is empty. Add supplements from the catalog.
+            </div>
+
+            <div *ngFor="let item of cart" class="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs space-y-2">
+              <div class="flex justify-between items-start">
+                <p class="font-bold text-slate-200 truncate max-w-[120px]">{{ item.name }}</p>
+                <button (click)="removeFromCart(item.id)" class="text-slate-500 hover:text-red-400 font-semibold text-xs">&times;</button>
+              </div>
+              
+              <div class="flex justify-between items-center text-slate-400">
+                <div class="flex items-center gap-2 border border-slate-700 bg-slate-950 rounded px-1.5 py-0.5">
+                  <button (click)="updateQuantity(item, -1)" class="hover:text-white font-bold">-</button>
+                  <span class="text-[10px] font-bold text-slate-200 px-1">{{ item.quantity }}</span>
+                  <button (click)="updateQuantity(item, 1)" class="hover:text-white font-bold">+</button>
+                </div>
+                <span class="font-semibold text-slate-300">₹{{ item.price * item.quantity | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-850 pt-4 space-y-4">
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-400 uppercase font-semibold">Total Amount</span>
+              <span class="text-lg font-extrabold text-white">₹{{ getCartTotal() | number:'1.2-2' }}</span>
+            </div>
+
+            <button 
+              (click)="openProductCheckout()"
+              [disabled]="cart.length === 0"
+              class="w-full py-2.5 rounded-lg btn-gold text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Checkout Order
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+</div>
+
+<!-- ==================== CHECKOUT & PAYMENT MODAL OVERLAY ==================== -->
+<div *ngIf="showCheckoutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="w-full max-w-md p-6 rounded-2xl glass-panel shadow-2xl space-y-5 text-xs text-slate-300 relative">
+    
+    <!-- IDLE Checkout View -->
+    <ng-container *ngIf="checkoutStatus === 'IDLE'">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Payment simulation checkout</h3>
+        <button (click)="closeCheckoutModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-950 border border-slate-850 space-y-2">
+        <div class="flex justify-between">
+          <span class="text-slate-400">Payment Purpose</span>
+          <span class="font-bold text-slate-200 uppercase">{{ paymentType === 'MEMBERSHIP_RENEWAL' ? 'Membership Renewal' : 'Product Purchase' }}</span>
+        </div>
+        <div *ngIf="selectedPlan" class="flex justify-between">
+          <span class="text-slate-400">Selected Plan</span>
+          <span class="font-bold text-white">{{ selectedPlan.name }}</span>
+        </div>
+        <div class="flex justify-between border-t border-slate-800/80 pt-2 text-sm font-extrabold">
+          <span class="text-slate-200">Amount Due</span>
+          <span class="text-amber-400">₹{{ getCheckoutAmount() | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <!-- Payment Method Selection -->
+      <div class="space-y-2">
+        <label class="block text-slate-400 font-semibold uppercase text-[10px] tracking-wider">Select Payment Gateway</label>
+        <div class="grid grid-cols-2 gap-4">
+          <button 
+            (click)="paymentMethod = 'RAZORPAY'"
+            [class.border-amber-400]="paymentMethod === 'RAZORPAY'"
+            [class.bg-amber-400/5]="paymentMethod === 'RAZORPAY'"
+            class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-center font-bold text-xs hover:border-slate-700 transition-all text-slate-100 flex flex-col items-center justify-center gap-1"
+          >
+            <span>Razorpay</span>
+            <span class="text-[8px] text-slate-500 uppercase tracking-widest">Gateway</span>
+          </button>
+          <button 
+            (click)="paymentMethod = 'PAYTM'"
+            [class.border-amber-400]="paymentMethod === 'PAYTM'"
+            [class.bg-amber-400/5]="paymentMethod === 'PAYTM'"
+            class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-center font-bold text-xs hover:border-slate-700 transition-all text-slate-100 flex flex-col items-center justify-center gap-1"
+          >
+            <span>Paytm</span>
+            <span class="text-[8px] text-slate-500 uppercase tracking-widest">Wallet</span>
+          </button>
+        </div>
+      </div>
+
+      <button (click)="processMockPayment()" class="w-full py-3 rounded-lg btn-gold font-bold transition-all text-xs">
+        Authorize & pay ₹{{ getCheckoutAmount() | number:'1.2-2' }}
+      </button>
+    </ng-container>
+
+    <!-- PROCESSING Checkout View -->
+    <ng-container *ngIf="checkoutStatus === 'PROCESSING'">
+      <div class="flex flex-col items-center justify-center py-10 space-y-6">
+        <div class="relative w-16 h-16 flex items-center justify-center">
+          <div class="absolute inset-0 border-t-2 border-amber-400 rounded-full animate-spin"></div>
+          <svg class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        
+        <div class="text-center space-y-2">
+          <p class="text-sm font-bold text-white">Connecting Secure Gateway...</p>
+          <p class="text-slate-400 text-[10px]">Processing transaction with {{ paymentMethod }} payment terminal.</p>
+        </div>
+
+        <div class="w-full bg-slate-950 border border-slate-800 rounded-full h-2.5 overflow-hidden">
+          <div [style.width.%]="checkoutProgress" class="bg-amber-400 h-full rounded-full transition-all duration-300"></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- SUCCESS Checkout View -->
+    <ng-container *ngIf="checkoutStatus === 'SUCCESS'">
+      <div class="flex flex-col items-center justify-center py-8 space-y-5 text-center">
+        <div class="h-14 w-14 rounded-full bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400 animate-bounce">
+          <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <div class="space-y-1">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Payment Transaction successful</h3>
+          <p class="text-slate-400 text-xs">Your order has been recorded. Check details in your profile panel.</p>
+        </div>
+
+        <button (click)="closeCheckoutModal()" class="w-full py-2.5 rounded btn-gold text-xs font-bold mt-2">
+          Return to E-Shop
+        </button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

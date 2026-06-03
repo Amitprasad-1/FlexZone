@@ -1,0 +1,318 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Welcome Banner -->
+  <div *ngIf="profile" class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
+    <div>
+      <h1 class="text-3xl font-extrabold text-white">Hello, {{ profile.fullName }}!</h1>
+      <p class="text-slate-400 text-sm mt-1">Track your fitness, bookings, supplement purchases, and health metrics.</p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <span class="text-xs text-slate-400 font-medium">Status:</span>
+      <span 
+        [class.bg-emerald-950]="profile.membershipStatus === 'ACTIVE'"
+        [class.text-emerald-400]="profile.membershipStatus === 'ACTIVE'"
+        [class.border-emerald-500/20]="profile.membershipStatus === 'ACTIVE'"
+        [class.bg-red-950]="profile.membershipStatus === 'EXPIRED'"
+        [class.text-red-400]="profile.membershipStatus === 'EXPIRED'"
+        [class.border-red-500/20]="profile.membershipStatus === 'EXPIRED'"
+        [class.bg-yellow-950]="profile.membershipStatus === 'PENDING'"
+        [class.text-yellow-400]="profile.membershipStatus === 'PENDING'"
+        [class.border-yellow-500/20]="profile.membershipStatus === 'PENDING'"
+        class="px-3 py-1 border rounded-lg text-xs font-bold uppercase tracking-wider"
+      >
+        {{ profile.membershipStatus }}
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 space-y-4">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-amber-400 border-slate-800"></div>
+    <p class="text-slate-400 text-xs">Loading profile metrics...</p>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="errorMessage" class="p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-sm">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-sm">
+    {{ successMessage }}
+  </div>
+
+  <ng-container *ngIf="!loading && profile">
+    <!-- Sub-tab Navigation -->
+    <div class="flex flex-col sm:flex-row bg-slate-900 border border-slate-800 p-1 rounded-xl w-full sm:w-fit mb-6 gap-1">
+      <button 
+        (click)="activeTab = 'metrics'"
+        [class.bg-amber-400]="activeTab === 'metrics'"
+        [class.text-slate-950]="activeTab === 'metrics'"
+        [class.text-slate-400]="activeTab !== 'metrics'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all text-center w-full sm:w-auto"
+      >
+        Health Profile
+      </button>
+      <button 
+        (click)="activeTab = 'workout'"
+        [class.bg-amber-400]="activeTab === 'workout'"
+        [class.text-slate-950]="activeTab === 'workout'"
+        [class.text-slate-400]="activeTab !== 'workout'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all text-center w-full sm:w-auto"
+      >
+        My Workout Routine
+      </button>
+      <button 
+        (click)="activeTab = 'diet'"
+        [class.bg-amber-400]="activeTab === 'diet'"
+        [class.text-slate-950]="activeTab === 'diet'"
+        [class.text-slate-400]="activeTab !== 'diet'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all text-center w-full sm:w-auto"
+      >
+        My Nutrition Diet
+      </button>
+    </div>
+
+    <!-- ==================== TAB 1: HEALTH METRICS ==================== -->
+    <div *ngIf="activeTab === 'metrics'" class="space-y-6">
+      <!-- Grid of Profile Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Membership details -->
+      <div class="p-6 rounded-2xl glass-panel space-y-4">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Plan details</h3>
+        <div class="space-y-2">
+          <p class="text-lg font-bold text-white">{{ profile.membershipPlanName }}</p>
+          <div class="text-xs text-slate-400 space-y-1">
+            <p *ngIf="profile.membershipStartDate">Started: {{ profile.membershipStartDate | date:'mediumDate' }}</p>
+            <p *ngIf="profile.membershipEndDate">Expires: {{ profile.membershipEndDate | date:'mediumDate' }}</p>
+          </div>
+        </div>
+        <div *ngIf="profile.membershipStatus === 'PENDING' || profile.membershipStatus === 'EXPIRED'" class="pt-2">
+          <a routerLink="/shop" class="btn-gold text-xs w-full py-2">Activate/Renew Subscription</a>
+        </div>
+      </div>
+
+      <!-- Instructor Info -->
+      <div class="p-6 rounded-2xl glass-panel space-y-4">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Assigned Gym Trainer</h3>
+        <div class="space-y-1">
+          <p class="text-lg font-bold text-white">{{ profile.assignedTrainerName }}</p>
+          <p class="text-xs text-amber-400" *ngIf="profile.assignedTrainerId">Personal training active</p>
+          <p class="text-xs text-slate-500" *ngIf="!profile.assignedTrainerId">Need a trainer? Contact front desk.</p>
+        </div>
+      </div>
+
+      <!-- Check-In QR Identifier -->
+      <div class="p-6 rounded-2xl glass-panel flex flex-col justify-between items-center text-center">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 w-full text-left">Your Digital Check-in QR</h3>
+        <!-- Simple mock representation of QR Code -->
+        <div class="my-3 p-3 bg-white rounded-lg inline-block border border-slate-700">
+          <!-- Drawing simulated QR pattern using grids -->
+          <div class="grid grid-cols-5 gap-0.5 w-24 h-24 bg-white">
+            <div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+            <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div>
+            <div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div>
+            <div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div>
+            <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div>
+          </div>
+        </div>
+        <p class="text-[9px] text-slate-400 font-mono tracking-wider">MEMBER ID: #{{ profile.id }}</p>
+      </div>
+    </div>
+
+    <!-- BMI Calculator and Progress Log Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Calculator form -->
+      <div class="lg:col-span-1 p-6 rounded-2xl glass-panel space-y-4 h-fit">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">BMI Health Calculator</h3>
+        <p class="text-slate-400 text-xs leading-relaxed">Calculate and log your Body Mass Index directly to monitor progress.</p>
+        
+        <div class="space-y-4 text-xs">
+          <div>
+            <label class="block text-slate-400 mb-1.5 uppercase font-semibold">Height (cm)</label>
+            <input type="number" [(ngModel)]="heightCm" (input)="calculateBmiValue()" class="w-full px-3 py-2.5 rounded bg-slate-900 border border-slate-700 text-slate-200 outline-none focus:border-amber-400 text-xs">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1.5 uppercase font-semibold">Weight (kg)</label>
+            <input type="number" [(ngModel)]="weightKg" (input)="calculateBmiValue()" class="w-full px-3 py-2.5 rounded bg-slate-900 border border-slate-700 text-slate-200 outline-none focus:border-amber-400 text-xs">
+          </div>
+
+          <!-- Calculated Display -->
+          <div *ngIf="calculatedBmi" class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1">
+            <p class="text-slate-400 uppercase font-bold text-[10px] tracking-wider">Computed BMI</p>
+            <p class="text-3xl font-extrabold text-amber-400">{{ calculatedBmi }}</p>
+            <span 
+              [class.text-emerald-400]="bmiCategory === 'Normal Weight'"
+              [class.text-yellow-400]="bmiCategory === 'Underweight' || bmiCategory === 'Overweight'"
+              [class.text-red-400]="bmiCategory === 'Obese'"
+              class="text-xs font-semibold"
+            >
+              {{ bmiCategory }}
+            </span>
+          </div>
+
+          <button (click)="submitBmi()" [disabled]="!calculatedBmi" class="w-full py-2.5 rounded btn-gold text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            Log Progress Entry
+          </button>
+        </div>
+      </div>
+
+      <!-- Historical Logs Table -->
+      <div class="lg:col-span-2 p-6 rounded-2xl glass-panel space-y-4">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Health tracking History</h3>
+        <div class="max-h-[310px] overflow-y-auto pr-1">
+          <div *ngIf="bmiHistory.length === 0" class="text-center text-slate-500 text-xs py-16">
+            No health logs found. Enter height and weight to start tracking.
+          </div>
+          
+          <table *ngIf="bmiHistory.length > 0" class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+                <th class="py-2.5">Date</th>
+                <th class="py-2.5">Height (cm)</th>
+                <th class="py-2.5">Weight (kg)</th>
+                <th class="py-2.5">BMI Value</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/80">
+              <tr *ngFor="let row of bmiHistory" class="text-slate-300">
+                <td class="py-2.5">{{ row.loggedDate | date:'mediumDate' }}</td>
+                <td class="py-2.5">{{ row.heightCm }} cm</td>
+                <td class="py-2.5">{{ row.weightKg }} kg</td>
+                <td class="py-2.5 font-bold text-white flex items-center gap-2">
+                  <span>{{ row.calculatedBmi }}</span>
+                  <span 
+                    [class.bg-emerald-500/20]="row.calculatedBmi >= 18.5 && row.calculatedBmi < 25"
+                    [class.text-emerald-400]="row.calculatedBmi >= 18.5 && row.calculatedBmi < 25"
+                    [class.bg-yellow-500/20]="(row.calculatedBmi < 18.5) || (row.calculatedBmi >= 25 && row.calculatedBmi < 30)"
+                    [class.text-yellow-400]="(row.calculatedBmi < 18.5) || (row.calculatedBmi >= 25 && row.calculatedBmi < 30)"
+                    [class.bg-red-500/20]="row.calculatedBmi >= 30"
+                    [class.text-red-400]="row.calculatedBmi >= 30"
+                    class="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase"
+                  >
+                    {{ row.calculatedBmi >= 18.5 && row.calculatedBmi < 25 ? 'Normal' : row.calculatedBmi < 18.5 ? 'Under' : row.calculatedBmi < 30 ? 'Over' : 'Obese' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-Shop orders tracker -->
+    <div class="glass-panel rounded-2xl p-6 space-y-4">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">Supplement Purchase history</h3>
+      <div class="max-h-60 overflow-y-auto pr-1">
+        <div *ngIf="orders.length === 0" class="text-center text-slate-500 text-xs py-10">
+          No supplement orders logged. Visit the E-Shop to make your first purchase.
+        </div>
+
+        <div *ngFor="let order of orders" class="p-4 rounded-lg bg-slate-900 border border-slate-800 text-xs mb-3 space-y-3">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <div>
+              <p class="font-bold text-slate-200">Order ID: #{{ order.id }}</p>
+              <p class="text-[10px] text-slate-500">{{ order.orderDate | date:'medium' }}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-extrabold text-amber-400">₹{{ order.totalAmount | number:'1.2-2' }}</p>
+              <span class="text-[9px] font-bold text-emerald-400 uppercase bg-emerald-950/40 px-2 py-0.5 rounded">{{ order.status }}</span>
+            </div>
+          </div>
+
+          <!-- Items loop -->
+          <div class="space-y-1.5 pl-2">
+            <div *ngFor="let item of order.orderItems" class="flex justify-between items-center text-slate-400 text-[11px]">
+              <span>{{ item.product.name }} (x{{ item.quantity }})</span>
+              <span>₹{{ item.unitPrice | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- Close E-Shop tracker -->
+  </div> <!-- Close Tab 1 Metrics -->
+
+  <!-- ==================== TAB 2: MY WORKOUT ROUTINE ==================== -->
+    <div *ngIf="activeTab === 'workout'" class="space-y-6">
+      <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-white">Daily Workout Schedule</h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              <span *ngIf="profile.assignedTrainerId">Personal training customized program by <strong>{{ profile.assignedTrainerName }}</strong></span>
+              <span *ngIf="!profile.assignedTrainerId">Standard fitness routine. For a customized body transformation plan, assign a personal trainer in Admin panel.</span>
+            </p>
+          </div>
+          <span class="text-xs text-amber-500 bg-amber-500/10 px-3 py-1 rounded font-bold uppercase tracking-wider">
+            Status: {{ profile.membershipStatus }}
+          </span>
+        </div>
+
+        <div *ngIf="profile.membershipStatus !== 'ACTIVE'" class="p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl">
+          Membership status is inactive. Please renew/activate your membership to view active routines.
+        </div>
+
+        <div *ngIf="profile.membershipStatus === 'ACTIVE'" class="space-y-6">
+          <div *ngFor="let item of (profile.assignedTrainerId ? workoutRoutine.custom : workoutRoutine.general)" class="p-5 rounded-xl bg-slate-900 border border-slate-800 transition-all hover:border-slate-700">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+              <span class="text-sm font-bold text-amber-400 uppercase tracking-widest">{{ item.day }}</span>
+              <span class="text-xs font-semibold text-slate-300 bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">{{ item.focus }}</span>
+            </div>
+
+            <!-- Exercises list -->
+            <div class="overflow-x-auto text-xs">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="text-slate-500 uppercase tracking-widest text-[9px] border-b border-slate-800/60 font-bold pb-2">
+                    <th class="pb-2">Exercise / Routine</th>
+                    <th class="pb-2 text-center">Sets</th>
+                    <th class="pb-2 text-center">Reps</th>
+                    <th class="pb-2 text-right">Target Weight</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/30 text-slate-300">
+                  <tr *ngFor="let ex of item.exercises" class="hover:bg-slate-800/10">
+                    <td class="py-2.5 font-medium text-slate-200">{{ ex.name }}</td>
+                    <td class="py-2.5 text-center">{{ ex.sets }}</td>
+                    <td class="py-2.5 text-center">{{ ex.reps }}</td>
+                    <td class="py-2.5 text-right font-bold text-amber-500">{{ ex.weight }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 3: MY DIET CHART ==================== -->
+    <div *ngIf="activeTab === 'diet'" class="space-y-6">
+      <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-white">Daily Nutrition Diet Guide</h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              <span *ngIf="profile.assignedTrainerId">Personalized dietary macro goals customized by <strong>{{ profile.assignedTrainerName }}</strong></span>
+              <span *ngIf="!profile.assignedTrainerId">Standard high-protein active plan. For calorie-calculated custom targets, assign a trainer.</span>
+            </p>
+          </div>
+          <span class="text-xs text-amber-500 bg-amber-500/10 px-3 py-1 rounded font-bold uppercase tracking-wider">
+            Status: {{ profile.membershipStatus }}
+          </span>
+        </div>
+
+        <div *ngIf="profile.membershipStatus !== 'ACTIVE'" class="p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl">
+          Membership status is inactive. Please renew/activate your membership to view active macros.
+        </div>
+
+        <div *ngIf="profile.membershipStatus === 'ACTIVE'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let meal of (profile.assignedTrainerId ? dietChart.custom : dietChart.general)" class="p-4 rounded-xl bg-slate-900 border border-slate-800 hover:-translate-y-0.5 transition-all space-y-2">
+            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wide border-b border-slate-800 pb-2">
+              {{ meal.meal }}
+            </h4>
+            <p class="text-xs text-slate-300 leading-relaxed font-medium">
+              {{ meal.description }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

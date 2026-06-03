@@ -1,0 +1,114 @@
+<aside *ngIf="authService.isLoggedIn()" class="hidden md:flex w-16 hover:w-64 bg-slate-900 border-r border-slate-800 min-h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2 transition-all duration-300 ease-in-out group z-20 overflow-hidden select-none">
+  <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 whitespace-nowrap overflow-hidden transition-all duration-300 w-0 opacity-0 group-hover:w-auto group-hover:opacity-100">
+    Navigation
+  </p>
+
+  <!-- ADMIN Menu Links -->
+  <ng-container *ngIf="authService.getRole() === 'ADMIN'">
+    <a routerLink="/admin" routerLinkActive="bg-slate-800/80 text-amber-400 border-l-2 border-amber-400 font-bold" class="flex items-center py-2.5 px-3 rounded-lg text-slate-300 hover:bg-slate-800/50 hover:text-amber-400 hover:scale-[1.03] active:scale-95 transition-all duration-300 ease-in-out">
+      <svg class="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+      </svg>
+      <span class="ml-0 opacity-0 w-0 group-hover:ml-3 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 overflow-hidden whitespace-nowrap text-sm font-semibold">
+        Admin Dashboard
+      </span>
+    </a>
+  </ng-container>
+
+  <!-- MEMBER Menu Links -->
+  <ng-container *ngIf="authService.getRole() === 'MEMBER'">
+    <a routerLink="/member" routerLinkActive="bg-slate-800/80 text-amber-400 border-l-2 border-amber-400 font-bold" class="flex items-center py-2.5 px-3 rounded-lg text-slate-300 hover:bg-slate-800/50 hover:text-amber-400 hover:scale-[1.03] active:scale-95 transition-all duration-300 ease-in-out">
+      <svg class="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+      <span class="ml-0 opacity-0 w-0 group-hover:ml-3 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 overflow-hidden whitespace-nowrap text-sm font-semibold">
+        Personal Profile
+      </span>
+    </a>
+  </ng-container>
+
+  <!-- Bookings (Visible to all authorized roles but behaves differently) -->
+  <a routerLink="/bookings" routerLinkActive="bg-slate-800/80 text-amber-400 border-l-2 border-amber-400 font-bold" class="flex items-center py-2.5 px-3 rounded-lg text-slate-300 hover:bg-slate-800/50 hover:text-amber-400 hover:scale-[1.03] active:scale-95 transition-all duration-300 ease-in-out">
+    <svg class="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+    <span class="ml-0 opacity-0 w-0 group-hover:ml-3 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 overflow-hidden whitespace-nowrap text-sm font-semibold">
+      Bookings & schedules
+    </span>
+  </a>
+
+  <!-- Check-ins Scanner Center (Admin and Trainer only) -->
+  <ng-container *ngIf="authService.getRole() === 'ADMIN' || authService.getRole() === 'TRAINER'">
+    <a routerLink="/checkin" routerLinkActive="bg-slate-800/80 text-amber-400 border-l-2 border-amber-400 font-bold" class="flex items-center py-2.5 px-3 rounded-lg text-slate-300 hover:bg-slate-800/50 hover:text-amber-400 hover:scale-[1.03] active:scale-95 transition-all duration-300 ease-in-out">
+      <svg class="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+      </svg>
+      <span class="ml-0 opacity-0 w-0 group-hover:ml-3 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 overflow-hidden whitespace-nowrap text-sm font-semibold">
+        QR Check-in scanner
+      </span>
+    </a>
+  </ng-container>
+
+  <!-- Supplement E-Shop (Admin & Member) -->
+  <ng-container *ngIf="authService.getRole() === 'ADMIN' || authService.getRole() === 'MEMBER'">
+    <a routerLink="/shop" routerLinkActive="bg-slate-800/80 text-amber-400 border-l-2 border-amber-400 font-bold" class="flex items-center py-2.5 px-3 rounded-lg text-slate-300 hover:bg-slate-800/50 hover:text-amber-400 hover:scale-[1.03] active:scale-95 transition-all duration-300 ease-in-out">
+      <svg class="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      </svg>
+      <span class="ml-0 opacity-0 w-0 group-hover:ml-3 group-hover:opacity-100 group-hover:w-auto transition-all duration-300 overflow-hidden whitespace-nowrap text-sm font-semibold">
+        Supplement E-Shop
+      </span>
+    </a>
+  </ng-container>
+</aside>
+
+<!-- Mobile Bottom Navigation Bar -->
+<nav *ngIf="authService.isLoggedIn()" class="flex md:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-900/95 backdrop-blur-md border-t border-slate-800/85 z-30 px-2 py-1 justify-around items-center select-none shadow-[0_-5px_25px_rgba(0,0,0,0.5)]">
+  <!-- ADMIN Link -->
+  <ng-container *ngIf="authService.getRole() === 'ADMIN'">
+    <a routerLink="/admin" routerLinkActive="text-amber-400 font-bold" class="flex flex-col items-center justify-center text-slate-400 hover:text-amber-400 transition-all duration-200 py-1 flex-1">
+      <svg class="h-5 w-5 transition-transform duration-200 active:scale-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+      </svg>
+      <span class="text-[9px] font-semibold tracking-wide mt-0.5">Admin</span>
+    </a>
+  </ng-container>
+
+  <!-- MEMBER Link -->
+  <ng-container *ngIf="authService.getRole() === 'MEMBER'">
+    <a routerLink="/member" routerLinkActive="text-amber-400 font-bold" class="flex flex-col items-center justify-center text-slate-400 hover:text-amber-400 transition-all duration-200 py-1 flex-1">
+      <svg class="h-5 w-5 transition-transform duration-200 active:scale-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+      <span class="text-[9px] font-semibold tracking-wide mt-0.5">Profile</span>
+    </a>
+  </ng-container>
+
+  <!-- Bookings Link -->
+  <a routerLink="/bookings" routerLinkActive="text-amber-400 font-bold" class="flex flex-col items-center justify-center text-slate-400 hover:text-amber-400 transition-all duration-200 py-1 flex-1">
+    <svg class="h-5 w-5 transition-transform duration-200 active:scale-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+    <span class="text-[9px] font-semibold tracking-wide mt-0.5">Bookings</span>
+  </a>
+
+  <!-- Scanner Link (Admin/Trainer) -->
+  <ng-container *ngIf="authService.getRole() === 'ADMIN' || authService.getRole() === 'TRAINER'">
+    <a routerLink="/checkin" routerLinkActive="text-amber-400 font-bold" class="flex flex-col items-center justify-center text-slate-400 hover:text-amber-400 transition-all duration-200 py-1 flex-1">
+      <svg class="h-5 w-5 transition-transform duration-200 active:scale-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+      </svg>
+      <span class="text-[9px] font-semibold tracking-wide mt-0.5">Scanner</span>
+    </a>
+  </ng-container>
+
+  <!-- Supplement Shop Link (Admin/Member) -->
+  <ng-container *ngIf="authService.getRole() === 'ADMIN' || authService.getRole() === 'MEMBER'">
+    <a routerLink="/shop" routerLinkActive="text-amber-400 font-bold" class="flex flex-col items-center justify-center text-slate-400 hover:text-amber-400 transition-all duration-200 py-1 flex-1">
+      <svg class="h-5 w-5 transition-transform duration-200 active:scale-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      </svg>
+      <span class="text-[9px] font-semibold tracking-wide mt-0.5">E-Shop</span>
+    </a>
+  </ng-container>
+</nav>

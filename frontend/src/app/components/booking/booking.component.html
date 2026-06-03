@@ -1,0 +1,175 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Title Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
+    <div>
+      <h1 class="text-3xl font-extrabold text-white">Slots & Classes Schedules</h1>
+      <p class="text-slate-400 text-sm mt-1">Book your hourly workout slots or register for special fitness classes (Zumba, Yoga, Cardio).</p>
+    </div>
+
+    <!-- Date selector for slots -->
+    <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 p-2 rounded-xl text-xs">
+      <span class="text-slate-400 font-semibold uppercase">Booking Date:</span>
+      <input 
+        type="date" 
+        [(ngModel)]="selectedDate" 
+        (change)="loadData()"
+        class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 outline-none focus:border-amber-400 text-xs"
+      >
+    </div>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 space-y-4">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-amber-400 border-slate-800"></div>
+    <p class="text-slate-400 text-xs">Fetching schedules and active bookings...</p>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="errorMessage" class="p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-sm flex justify-between items-center">
+    <span>{{ errorMessage }}</span>
+    <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+  </div>
+  <div *ngIf="successMessage" class="p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-sm flex justify-between items-center">
+    <span>{{ successMessage }}</span>
+    <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Left + Center: Slots & Classes -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- HOURLY SLOTS GRID -->
+        <div class="p-6 rounded-2xl glass-panel space-y-4">
+          <h2 class="text-base font-bold text-white uppercase tracking-wider">Hourly Gym workout slots</h2>
+          <p class="text-xs text-slate-400">Gym capacity is limited per hour to prevent overcrowding. Reserve your slot.</p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+            <div *ngFor="let slot of slots" class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all">
+              <div>
+                <p class="text-sm font-bold text-white">
+                  {{ slot.startTime.substring(0, 5) }} - {{ slot.endTime.substring(0, 5) }}
+                </p>
+                <p class="text-[10px] text-slate-500 mt-1">Capacity limit: {{ slot.maxCapacity }} members</p>
+              </div>
+
+              <!-- Button logic depending on Role and Status -->
+              <ng-container *ngIf="authService.isLoggedIn() && authService.getRole() === 'MEMBER'; else guestOrStaffTpl">
+                <button 
+                  *ngIf="!isSlotBooked(slot.id)"
+                  (click)="bookSlot(slot.id)"
+                  class="btn-gold text-[11px] w-full py-1.5 font-bold"
+                >
+                  Book Slot
+                </button>
+                <span 
+                  *ngIf="isSlotBooked(slot.id)"
+                  class="w-full text-center py-1.5 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-wider"
+                >
+                  Reserved
+                </span>
+              </ng-container>
+              <ng-template #guestOrStaffTpl>
+                <span class="text-[10px] text-slate-600 italic">Authenticate as Member to book</span>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL FITNESS CLASSES -->
+        <div class="p-6 rounded-2xl glass-panel space-y-4">
+          <h2 class="text-base font-bold text-white uppercase tracking-wider">Special Fitness Classes</h2>
+          
+          <div class="space-y-4 pt-1">
+            <div *ngIf="classes.length === 0" class="text-center text-slate-500 text-xs py-8">
+              No special class sessions scheduled at the moment.
+            </div>
+
+            <div *ngFor="let cls of classes" class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-slate-700 transition-all">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-bold text-white">{{ cls.className }}</h3>
+                  <span class="text-[9px] uppercase font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                    Trainer: {{ cls.trainer.user.fullName }}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 max-w-md">{{ cls.description }}</p>
+                <p class="text-[10px] text-slate-500">
+                  Scheduled: {{ cls.startTime | date:'medium' }} to {{ cls.endTime | date:'shortTime' }}
+                </p>
+              </div>
+
+              <div class="w-full sm:w-auto text-right">
+                <ng-container *ngIf="authService.isLoggedIn() && authService.getRole() === 'MEMBER'; else guestOrStaffClsTpl">
+                  <button 
+                    *ngIf="!isClassBooked(cls.id)"
+                    (click)="bookClass(cls.id)"
+                    class="btn-gold text-[11px] px-4 py-1.5 font-bold w-full sm:w-auto"
+                  >
+                    Register Class
+                  </button>
+                  <span 
+                    *ngIf="isClassBooked(cls.id)"
+                    class="px-4 py-1.5 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-wider block sm:inline-block text-center"
+                  >
+                    Registered
+                  </span>
+                </ng-container>
+                <ng-template #guestOrStaffClsTpl>
+                  <span class="text-[10px] text-slate-600 italic">Member only access</span>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: My Active Bookings -->
+      <div class="lg:col-span-1 space-y-6">
+        <div class="p-6 rounded-2xl glass-panel space-y-4 h-fit">
+          <h2 class="text-base font-bold text-white uppercase tracking-wider">Your Active Reservations</h2>
+          
+          <div class="space-y-3">
+            <div *ngIf="myBookings.length === 0" class="text-center text-slate-500 text-xs py-16">
+              You have no active slot reservations or class registrations.
+            </div>
+
+            <div *ngFor="let b of myBookings" class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span 
+                    [class.bg-amber-500/10]="b.bookingType === 'SLOT'"
+                    [class.text-amber-400]="b.bookingType === 'SLOT'"
+                    [class.bg-purple-500/10]="b.bookingType === 'CLASS'"
+                    [class.text-purple-400]="b.bookingType === 'CLASS'"
+                    class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider border border-current/10"
+                  >
+                    {{ b.bookingType }}
+                  </span>
+                  
+                  <p class="font-bold text-white mt-2">
+                    {{ b.bookingType === 'SLOT' ? b.timeSlotText : b.classScheduleText }}
+                  </p>
+                  
+                  <p class="text-[10px] text-slate-500 mt-1">
+                    For date: {{ b.bookingDate | date:'mediumDate' }}
+                  </p>
+                </div>
+                
+                <button 
+                  (click)="cancelBooking(b.id)"
+                  class="text-red-400 hover:text-red-300 font-bold text-xs"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,642 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Header Title -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
+    <div>
+      <h1 class="text-3xl font-extrabold text-white">Owner Admin Workspace</h1>
+      <p class="text-slate-400 text-sm mt-1">Manage membership plans, trainers, customer accounts, and revenue sheets.</p>
+    </div>
+    <!-- Tabs Header -->
+    <div class="flex bg-slate-900 border border-slate-800 p-1 rounded-xl">
+      <button 
+        (click)="activeTab = 'analytics'"
+        [class.bg-amber-400]="activeTab === 'analytics'"
+        [class.text-slate-950]="activeTab === 'analytics'"
+        [class.text-slate-400]="activeTab !== 'analytics'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all"
+      >
+        Analytics
+      </button>
+      <button 
+        (click)="activeTab = 'members'"
+        [class.bg-amber-400]="activeTab === 'members'"
+        [class.text-slate-950]="activeTab === 'members'"
+        [class.text-slate-400]="activeTab !== 'members'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all"
+      >
+        Members
+      </button>
+      <button 
+        (click)="activeTab = 'trainers'"
+        [class.bg-amber-400]="activeTab === 'trainers'"
+        [class.text-slate-950]="activeTab === 'trainers'"
+        [class.text-slate-400]="activeTab !== 'trainers'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all"
+      >
+        Trainers
+      </button>
+      <button 
+        (click)="activeTab = 'plans'"
+        [class.bg-amber-400]="activeTab === 'plans'"
+        [class.text-slate-950]="activeTab === 'plans'"
+        [class.text-slate-400]="activeTab !== 'plans'"
+        class="px-4 py-2 text-xs font-bold rounded-lg transition-all"
+      >
+        Plans
+      </button>
+    </div>
+  </div>
+
+  <!-- Notification alerts -->
+  <div *ngIf="errorMessage" class="p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-sm flex justify-between items-center">
+    <span>{{ errorMessage }}</span>
+    <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+  </div>
+  <div *ngIf="successMessage" class="p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-sm flex justify-between items-center">
+    <span>{{ successMessage }}</span>
+    <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+  </div>
+
+  <!-- ==================== TAB 1: ANALYTICS ==================== -->
+  <div *ngIf="activeTab === 'analytics'" class="space-y-6">
+    <div *ngIf="loadingAnalytics" class="flex flex-col items-center justify-center py-20 space-y-4">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-amber-400 border-slate-800"></div>
+      <p class="text-slate-400 text-xs">Aggregating gym metrics data...</p>
+    </div>
+
+    <ng-container *ngIf="!loadingAnalytics && analytics">
+      <!-- Quick Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 rounded-2xl glass-panel relative overflow-hidden group hover:border-slate-700 transition-all">
+          <div class="absolute -top-10 -right-10 w-24 h-24 bg-amber-500/10 rounded-full group-hover:scale-150 transition-all duration-500"></div>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Active Subscriptions</p>
+          <p class="text-4xl font-extrabold text-white mt-2">{{ analytics.totalActiveMembers }}</p>
+          <p class="text-[10px] text-slate-400 mt-2">Active accounts with current valid plans</p>
+        </div>
+
+        <div class="p-6 rounded-2xl glass-panel relative overflow-hidden group hover:border-slate-700 transition-all">
+          <div class="absolute -top-10 -right-10 w-24 h-24 bg-amber-500/10 rounded-full group-hover:scale-150 transition-all duration-500"></div>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Monthly/Yearly Revenue</p>
+          <p class="text-4xl font-extrabold text-amber-400 mt-2">₹{{ analytics.totalRevenue | number:'1.2-2' }}</p>
+          <p class="text-[10px] text-slate-400 mt-2">Total gross revenue from registrations</p>
+        </div>
+
+        <div class="p-6 rounded-2xl glass-panel relative overflow-hidden group hover:border-slate-700 transition-all">
+          <div class="absolute -top-10 -right-10 w-24 h-24 bg-amber-500/10 rounded-full group-hover:scale-150 transition-all duration-500"></div>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Active Gym Instructors</p>
+          <p class="text-4xl font-extrabold text-white mt-2">{{ analytics.totalTrainers }}</p>
+          <p class="text-[10px] text-slate-400 mt-2">Certified trainers available for members</p>
+        </div>
+      </div>
+
+      <!-- Graphs / Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Monthly Revenue Chart (Bar Simulation) -->
+        <div class="p-6 rounded-2xl glass-panel space-y-4">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Revenue Breakdown (Current Year)</h3>
+          <div class="h-64 flex items-end justify-between gap-2 pt-6">
+            <div *ngFor="let m of getMonthlyKeys()" class="flex-1 flex flex-col items-center h-full justify-end group">
+              <span class="text-[9px] text-amber-400 font-bold opacity-0 group-hover:opacity-100 transition-all mb-1">
+                ₹{{ analytics.monthlyRevenue[m] | number:'1.0-0' }}
+              </span>
+              <!-- Calculated relative height mapping -->
+              <div 
+                [style.height.%]="analytics.monthlyRevenue[m] > 0 ? (analytics.monthlyRevenue[m] / maxMonthlyRevenue) * 100 : 5"
+                class="w-full bg-gradient-to-t from-amber-600 to-amber-400 rounded-t-sm min-h-[4px] hover:brightness-110 transition-all"
+              ></div>
+              <span class="text-[10px] text-slate-500 mt-2 font-semibold">{{ m }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Occupancy Rates -->
+        <div class="p-6 rounded-2xl glass-panel space-y-4">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Today's hourly slot Occupancy Rates</h3>
+          <div class="space-y-3 pt-2">
+            <div *ngFor="let s of getOccupancyKeys()" class="space-y-1">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-300 font-medium">{{ s }}</span>
+                <span class="text-slate-400 font-bold">{{ analytics.slotOccupancyRates[s] }}%</span>
+              </div>
+              <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                <div 
+                  [style.width.%]="analytics.slotOccupancyRates[s]"
+                  [class.bg-red-500]="analytics.slotOccupancyRates[s] >= 80"
+                  [class.bg-yellow-500]="analytics.slotOccupancyRates[s] >= 50 && analytics.slotOccupancyRates[s] < 80"
+                  [class.bg-amber-400]="analytics.slotOccupancyRates[s] < 50"
+                  class="h-full rounded-full transition-all"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- alerts and ledger -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Expiring Soon memberships -->
+        <div class="p-6 rounded-2xl glass-panel space-y-4">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-red-500 animate-ping"></span>
+            Expiring / Expired alerts (Within 7 Days)
+          </h3>
+          <div class="max-h-60 overflow-y-auto space-y-2 pr-1">
+            <div *ngIf="analytics.expiringMemberships.length === 0" class="text-center text-slate-500 text-xs py-8">
+              No memberships expiring in the next 7 days.
+            </div>
+            <div *ngFor="let m of analytics.expiringMemberships" class="p-3 rounded-lg bg-slate-900 border border-slate-800 flex justify-between items-center">
+              <div>
+                <p class="text-xs font-semibold text-slate-200">{{ m.fullName }}</p>
+                <p class="text-[10px] text-slate-500">Plan: {{ m.membershipPlanName }}</p>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-red-400 font-bold bg-red-950/40 border border-red-500/20 px-2 py-0.5 rounded">
+                  Expires: {{ m.membershipEndDate | date:'MMM d, y' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Payments Ledger -->
+        <div class="p-6 rounded-2xl glass-panel space-y-4">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Recent Transactions Ledger</h3>
+          <div class="max-h-60 overflow-y-auto space-y-2 pr-1">
+            <div *ngIf="analytics.recentPayments.length === 0" class="text-center text-slate-500 text-xs py-8">
+              No transaction entries found.
+            </div>
+            <div *ngFor="let p of analytics.recentPayments" class="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex justify-between items-center text-xs">
+              <div>
+                <p class="font-semibold text-slate-200">{{ p.memberName }}</p>
+                <p class="text-[9px] text-slate-500">{{ p.paymentDate }} | Tx ID: {{ p.transactionId }}</p>
+              </div>
+              <div class="text-right">
+                <p class="font-bold text-slate-200">₹{{ p.amount | number:'1.2-2' }}</p>
+                <span class="text-[9px] uppercase font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded">{{ p.status }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ==================== TAB 2: MEMBERS MANAGEMENT ==================== -->
+  <div *ngIf="activeTab === 'members'" class="glass-panel rounded-2xl overflow-hidden">
+    <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+      <h2 class="text-lg font-bold text-white uppercase tracking-wider">Gym Member Directory</h2>
+      <span class="text-xs text-slate-400 font-medium">Total: {{ members.length }}</span>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-slate-800 bg-slate-900/50 text-slate-400 font-bold uppercase tracking-wider">
+            <th class="p-4">Full Name</th>
+            <th class="p-4">Username / Email</th>
+            <th class="p-4">Membership Plan</th>
+            <th class="p-4">Start / End Date</th>
+            <th class="p-4">Status</th>
+            <th class="p-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800">
+          <tr *ngFor="let m of members" class="hover:bg-slate-800/20 text-slate-300">
+            <td class="p-4 font-semibold text-slate-100">{{ m.fullName }}</td>
+            <td class="p-4">
+              <p>{{ m.username }}</p>
+              <p class="text-[10px] text-slate-500">{{ m.email }}</p>
+            </td>
+            <td class="p-4">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] font-semibold text-slate-300 border border-slate-700">{{ m.membershipPlanName }}</span>
+            </td>
+            <td class="p-4">
+              <p *ngIf="m.membershipStartDate">{{ m.membershipStartDate | date:'mediumDate' }}</p>
+              <p *ngIf="m.membershipEndDate" class="text-[10px] text-slate-500">to {{ m.membershipEndDate | date:'mediumDate' }}</p>
+              <span *ngIf="!m.membershipStartDate" class="text-slate-600">N/A</span>
+            </td>
+            <td class="p-4">
+              <span 
+                [class.bg-emerald-950]="m.membershipStatus === 'ACTIVE'"
+                [class.text-emerald-400]="m.membershipStatus === 'ACTIVE'"
+                [class.bg-red-950]="m.membershipStatus === 'EXPIRED'"
+                [class.text-red-400]="m.membershipStatus === 'EXPIRED'"
+                [class.bg-yellow-950]="m.membershipStatus === 'PENDING'"
+                [class.text-yellow-400]="m.membershipStatus === 'PENDING'"
+                class="px-2 py-0.5 rounded font-bold uppercase text-[9px] border border-transparent"
+                [class.border-emerald-500/20]="m.membershipStatus === 'ACTIVE'"
+                [class.border-red-500/20]="m.membershipStatus === 'EXPIRED'"
+                [class.border-yellow-500/20]="m.membershipStatus === 'PENDING'"
+              >
+                {{ m.membershipStatus }}
+              </span>
+            </td>
+            <td class="p-4 text-right space-x-2">
+              <button (click)="openMemberEdit(m)" class="px-2.5 py-1.5 rounded bg-slate-800 text-slate-300 hover:text-amber-400 border border-slate-700 transition-all font-semibold">
+                Edit
+              </button>
+              <button (click)="deleteMember(m.id)" class="px-2.5 py-1.5 rounded bg-red-950/40 text-red-400 hover:bg-red-500 hover:text-slate-950 border border-red-500/20 transition-all font-semibold">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 3: TRAINERS MANAGEMENT ==================== -->
+  <div *ngIf="activeTab === 'trainers'" class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h2 class="text-lg font-bold text-white uppercase tracking-wider">Gym Instructors</h2>
+      <button (click)="openTrainerAdd()" class="btn-gold text-xs px-4 py-2 flex items-center gap-2">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+        </svg>
+        Add New Trainer
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let t of trainers" class="p-5 rounded-2xl glass-panel space-y-4 border border-slate-800 relative hover:border-slate-700 transition-all">
+        <div class="flex gap-3.5 items-start">
+          <img [src]="getTrainerPhoto(t)" [alt]="t.fullName" class="h-12 w-12 rounded-full object-cover border border-amber-500/30 flex-shrink-0" />
+          <div class="flex-1">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-bold text-white text-base leading-tight">{{ t.fullName }}</h3>
+                <p class="text-xs text-amber-400 font-semibold mt-1">{{ t.specialization }}</p>
+              </div>
+              <span class="text-[9px] font-bold text-slate-400 bg-slate-950/50 border border-slate-800 px-2 py-0.5 rounded ml-2">
+                {{ t.experienceYears }} Yrs
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-slate-400 text-xs leading-relaxed italic" *ngIf="t.bio">"{{ getTrainerBioText(t) }}"</p>
+        <p class="text-slate-500 text-xs leading-relaxed italic" *ngIf="!t.bio">No biography uploaded.</p>
+
+        <div class="border-t border-slate-800/80 pt-3 flex justify-between items-center text-xs">
+          <span class="text-[10px] text-slate-500">User: {{ t.username }}</span>
+          <div class="space-x-2">
+            <button (click)="openTrainerEdit(t)" class="text-amber-400 hover:text-amber-300 font-bold transition-all">Edit</button>
+            <button (click)="deleteTrainer(t.id)" class="text-red-400 hover:text-red-300 font-bold transition-all">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 4: MEMBERSHIP PLANS ==================== -->
+  <div *ngIf="activeTab === 'plans'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Plan Add Form -->
+    <div class="lg:col-span-1 p-6 rounded-2xl glass-panel h-fit space-y-5">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">Create Membership Plan</h3>
+      
+      <form (ngSubmit)="createPlan()" #planForm="ngForm" class="space-y-4 text-xs">
+        <div>
+          <label for="planName" class="block text-slate-400 mb-1.5 uppercase font-semibold">Plan Title</label>
+          <input 
+            type="text" 
+            id="planName" 
+            name="name" 
+            [(ngModel)]="newPlan.name" 
+            required 
+            class="w-full px-3 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 outline-none focus:border-amber-400 transition-all text-xs"
+            placeholder="e.g. Yearly Elite"
+          >
+        </div>
+
+        <div>
+          <label for="planDesc" class="block text-slate-400 mb-1.5 uppercase font-semibold">Description</label>
+          <textarea 
+            id="planDesc" 
+            name="description" 
+            [(ngModel)]="newPlan.description" 
+            rows="3" 
+            class="w-full px-3 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 outline-none focus:border-amber-400 transition-all text-xs"
+            placeholder="Plan perks, access levels..."
+          ></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="planPrice" class="block text-slate-400 mb-1.5 uppercase font-semibold">Price (INR)</label>
+            <input 
+              type="number" 
+              id="planPrice" 
+              name="price" 
+              [(ngModel)]="newPlan.price" 
+              required 
+              min="0"
+              class="w-full px-3 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 outline-none focus:border-amber-400 transition-all text-xs"
+            >
+          </div>
+
+          <div>
+            <label for="planDays" class="block text-slate-400 mb-1.5 uppercase font-semibold">Duration (Days)</label>
+            <input 
+              type="number" 
+              id="planDays" 
+              name="durationDays" 
+              [(ngModel)]="newPlan.durationDays" 
+              required 
+              min="1"
+              class="w-full px-3 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 outline-none focus:border-amber-400 transition-all text-xs"
+            >
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="!planForm.form.valid" class="w-full py-2.5 rounded-lg btn-gold text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          Save New Plan
+        </button>
+      </form>
+    </div>
+
+    <!-- Plans Directory -->
+    <div class="lg:col-span-2 glass-panel rounded-2xl overflow-hidden h-fit">
+      <div class="p-6 border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Configured Gym plans</h3>
+      </div>
+      
+      <div class="overflow-x-auto text-xs">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-800 bg-slate-900/50 text-slate-400 font-bold uppercase tracking-wider">
+              <th class="p-4">Plan Name</th>
+              <th class="p-4">Perks</th>
+              <th class="p-4">Cost (₹)</th>
+              <th class="p-4">Validity</th>
+              <th class="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800">
+            <tr *ngFor="let p of plans" class="hover:bg-slate-800/20 text-slate-300">
+              <td class="p-4 font-bold text-slate-100">{{ p.name }}</td>
+              <td class="p-4 text-slate-400 truncate max-w-[150px]">{{ p.description }}</td>
+              <td class="p-4 font-semibold">₹{{ p.price | number:'1.2-2' }}</td>
+              <td class="p-4 font-semibold text-amber-400">{{ p.durationDays }} Days</td>
+              <td class="p-4 text-right space-x-2">
+                <button (click)="openPlanEdit(p)" class="text-amber-400 hover:text-amber-300 font-bold transition-all">Edit</button>
+                <button (click)="deletePlan(p.id)" class="text-red-400 hover:text-red-300 font-bold transition-all">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: MEMBER EDIT ==================== -->
+<div *ngIf="showMemberModal && selectedMember" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="w-full max-w-md p-6 rounded-2xl glass-panel shadow-2xl flex flex-col max-h-[90vh] my-auto">
+    <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-shrink-0">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">Modify Member details</h3>
+      <button (click)="showMemberModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+    </div>
+
+    <!-- Error/Success alerts inside modal -->
+    <div *ngIf="errorMessage" class="mt-3 p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-xs flex justify-between items-center flex-shrink-0">
+      <span>{{ errorMessage }}</span>
+      <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+    </div>
+    <div *ngIf="successMessage" class="mt-3 p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-xs flex justify-between items-center flex-shrink-0">
+      <span>{{ successMessage }}</span>
+      <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+    </div>
+
+    <form (ngSubmit)="saveMember()" class="space-y-4 text-xs overflow-y-auto pr-1 flex-1 mt-4">
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Customer Name</label>
+        <input type="text" [(ngModel)]="selectedMember.fullName" name="fullName" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Email Address</label>
+        <input type="email" [(ngModel)]="selectedMember.email" name="email" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold uppercase">Membership Plan</label>
+          <select [(ngModel)]="selectedMember.membershipPlanId" name="membershipPlanId" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+            <option [value]="null">No Plan / Cancelled</option>
+            <option *ngFor="let p of plans" [value]="p.id">{{ p.name }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold uppercase">Trainer Assignment</label>
+          <select [(ngModel)]="selectedMember.assignedTrainerId" name="assignedTrainerId" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+            <option [value]="null">Unassigned</option>
+            <option *ngFor="let t of trainers" [value]="t.id">{{ t.fullName }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Subscription Status</label>
+        <select [(ngModel)]="selectedMember.membershipStatus" name="membershipStatus" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="EXPIRED">EXPIRED</option>
+          <option value="PENDING">PENDING</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold uppercase">Start Date</label>
+          <input type="date" [(ngModel)]="selectedMember.membershipStartDate" name="startDate" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold uppercase">Expiration Date</label>
+          <input type="date" [(ngModel)]="selectedMember.membershipEndDate" name="endDate" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+        </div>
+      </div>
+
+      <button type="submit" class="w-full py-2.5 rounded btn-gold text-xs font-bold transition-all mt-2">
+        Save Member Account
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL: TRAINER EDIT ==================== -->
+<div *ngIf="showTrainerModal && selectedTrainer" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="w-full max-w-md p-6 rounded-2xl glass-panel shadow-2xl flex flex-col max-h-[90vh] my-auto">
+    <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-shrink-0">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">Modify Instructor profile</h3>
+      <button (click)="showTrainerModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+    </div>
+
+    <!-- Error/Success alerts inside modal -->
+    <div *ngIf="errorMessage" class="mt-3 p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-xs flex justify-between items-center flex-shrink-0">
+      <span>{{ errorMessage }}</span>
+      <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+    </div>
+    <div *ngIf="successMessage" class="mt-3 p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-xs flex justify-between items-center flex-shrink-0">
+      <span>{{ successMessage }}</span>
+      <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+    </div>
+
+    <form (ngSubmit)="saveTrainer()" class="space-y-4 text-xs overflow-y-auto pr-1 flex-1 mt-4">
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Trainer Full Name</label>
+        <input type="text" [(ngModel)]="selectedTrainer.fullName" name="fullName" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Email Address</label>
+        <input type="email" [(ngModel)]="selectedTrainer.email" name="email" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Specialization</label>
+        <input type="text" [(ngModel)]="selectedTrainer.specialization" name="specialization" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs" placeholder="Yoga, Cardio, HIIT">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Experience (Years)</label>
+        <input type="number" [(ngModel)]="selectedTrainer.experienceYears" name="experienceYears" required min="0" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Short Biography</label>
+        <textarea [(ngModel)]="selectedTrainer.bioText" name="bioText" rows="3" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs" placeholder="Bio details..."></textarea>
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Profile Photo Selection</label>
+        <select [(ngModel)]="selectedTrainer.photoUrl" name="photoUrl" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+          <option value="trainer1.png">Trainer Photo 1 (Strength Coach)</option>
+          <option value="trainer2.png">Trainer Photo 2 (Yoga/Zumba)</option>
+          <option value="trainer3.png">Trainer Photo 3 (Nutrition Expert)</option>
+        </select>
+      </div>
+
+      <button type="submit" class="w-full py-2.5 rounded btn-gold text-xs font-bold transition-all mt-2">
+        Save Trainer Profile
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL: TRAINER ADD ==================== -->
+<div *ngIf="showTrainerAddModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="w-full max-w-md p-6 rounded-2xl glass-panel shadow-2xl flex flex-col max-h-[90vh] my-auto">
+    <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-shrink-0">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">Register new trainer</h3>
+      <button (click)="showTrainerAddModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+    </div>
+
+    <!-- Error/Success alerts inside modal -->
+    <div *ngIf="errorMessage" class="mt-3 p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-xs flex justify-between items-center flex-shrink-0">
+      <span>{{ errorMessage }}</span>
+      <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+    </div>
+    <div *ngIf="successMessage" class="mt-3 p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-xs flex justify-between items-center flex-shrink-0">
+      <span>{{ successMessage }}</span>
+      <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+    </div>
+
+    <form (ngSubmit)="addTrainer()" class="space-y-4 text-xs overflow-y-auto pr-1 flex-1 mt-4">
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Username</label>
+        <input type="text" [(ngModel)]="newTrainer.username" name="username" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Password</label>
+        <input type="password" [(ngModel)]="newTrainer.password" name="password" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs" placeholder="••••••••">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Trainer Full Name</label>
+        <input type="text" [(ngModel)]="newTrainer.fullName" name="fullName" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs" placeholder="Instructor Name">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Email Address</label>
+        <input type="email" [(ngModel)]="newTrainer.email" name="email" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs" placeholder="trainer@flexzone.com">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Specialization</label>
+        <input type="text" [(ngModel)]="newTrainer.specialization" name="specialization" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs" placeholder="Yoga, Cardio, Strength">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Experience (Years)</label>
+        <input type="number" [(ngModel)]="newTrainer.experienceYears" name="experienceYears" required min="0" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Short Biography</label>
+        <textarea [(ngModel)]="newTrainer.bioText" name="bioText" rows="3" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs" placeholder="Bio details..."></textarea>
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Profile Photo Selection</label>
+        <select [(ngModel)]="newTrainer.photoUrl" name="photoUrl" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+          <option value="trainer1.png">Trainer Photo 1 (Strength Coach)</option>
+          <option value="trainer2.png">Trainer Photo 2 (Yoga/Zumba)</option>
+          <option value="trainer3.png">Trainer Photo 3 (Nutrition Expert)</option>
+        </select>
+      </div>
+
+      <button type="submit" class="w-full py-2.5 rounded btn-gold text-xs font-bold transition-all mt-2">
+        Create Instructor Account
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL: PLAN EDIT ==================== -->
+<div *ngIf="showPlanModal && selectedPlan" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="w-full max-w-md p-6 rounded-2xl glass-panel shadow-2xl flex flex-col max-h-[90vh] my-auto">
+    <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-shrink-0">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">Modify Membership Plan</h3>
+      <button (click)="showPlanModal = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+    </div>
+
+    <!-- Error/Success alerts inside modal -->
+    <div *ngIf="errorMessage" class="mt-3 p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-xs flex justify-between items-center flex-shrink-0">
+      <span>{{ errorMessage }}</span>
+      <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+    </div>
+    <div *ngIf="successMessage" class="mt-3 p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-xs flex justify-between items-center flex-shrink-0">
+      <span>{{ successMessage }}</span>
+      <button (click)="clearAlerts()" class="text-xs hover:text-white">&times;</button>
+    </div>
+
+    <form (ngSubmit)="savePlan()" class="space-y-4 text-xs overflow-y-auto pr-1 flex-1 mt-4">
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Plan Title</label>
+        <input type="text" [(ngModel)]="selectedPlan.name" name="name" required class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+      </div>
+
+      <div>
+        <label class="block text-slate-400 mb-1 font-semibold uppercase">Description</label>
+        <textarea [(ngModel)]="selectedPlan.description" name="description" rows="3" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs"></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold uppercase">Price (INR)</label>
+          <input type="number" [(ngModel)]="selectedPlan.price" name="price" required min="0" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold uppercase">Duration (Days)</label>
+          <input type="number" [(ngModel)]="selectedPlan.durationDays" name="durationDays" required min="1" class="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none text-xs">
+        </div>
+      </div>
+
+      <button type="submit" class="w-full py-2.5 rounded btn-gold text-xs font-bold transition-all mt-2">
+        Save Membership Plan
+      </button>
+    </form>
+  </div>
+</div>

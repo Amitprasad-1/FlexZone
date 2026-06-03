@@ -1,0 +1,19 @@
+# Backend build files
+backend/target/
+backend/.maven/
+backend/*.jar
+
+# Frontend dependencies and builds
+frontend/node_modules/
+frontend/.angular/
+frontend/dist/
+
+# IDE files
+.vscode/
+frontend/.vscode/
+.idea/
+*.iml
+
+# Test scripts and temporary logs
+*.log
+*.ps1

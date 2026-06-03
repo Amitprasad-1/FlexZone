@@ -1,0 +1,71 @@
+<div class="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-slate-950">
+  <!-- Glowing decorative orbs -->
+  <div class="absolute top-1/4 left-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
+  <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-600/10 rounded-full blur-3xl -z-10 animate-pulse" style="animation-delay: 2s;"></div>
+
+  <div class="w-full max-w-md p-8 rounded-2xl glass-panel shadow-2xl relative">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent">
+        FLEXZONE
+      </h1>
+      <p class="text-amber-500 font-medium tracking-wide text-xs uppercase mt-1">Asansol Gym Portal</p>
+      <p class="text-slate-400 text-sm mt-3">Welcome back! Please enter your details.</p>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="errorMessage" class="mb-5 p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-xs text-center">
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="space-y-5">
+      <div>
+        <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Username</label>
+        <input 
+          type="text" 
+          id="username" 
+          name="username"
+          [(ngModel)]="credentials.username" 
+          required 
+          #usernameInput="ngModel"
+          class="w-full px-4 py-3 rounded-lg bg-slate-900/80 border border-slate-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-slate-100 placeholder-slate-500 outline-none transition-all text-sm"
+          placeholder="Enter username"
+        >
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Password</label>
+        </div>
+        <input 
+          type="password" 
+          id="password" 
+          name="password"
+          [(ngModel)]="credentials.password" 
+          required 
+          #passwordInput="ngModel"
+          class="w-full px-4 py-3 rounded-lg bg-slate-900/80 border border-slate-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-slate-100 placeholder-slate-500 outline-none transition-all text-sm"
+          placeholder="••••••••"
+        >
+      </div>
+
+      <button 
+        type="submit" 
+        [disabled]="!loginForm.form.valid || loading"
+        class="w-full py-3 rounded-lg btn-gold font-bold transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg *ngIf="loading" class="animate-spin h-5 w-5 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>{{ loading ? 'Signing in...' : 'Sign In' }}</span>
+      </button>
+    </form>
+
+    <div class="mt-8 text-center border-t border-slate-800 pt-6">
+      <p class="text-slate-400 text-xs">
+        Don't have an account? 
+        <a routerLink="/signup" class="text-amber-400 hover:text-amber-300 font-semibold transition-all">Sign up today</a>
+      </p>
+    </div>
+  </div>
+</div>

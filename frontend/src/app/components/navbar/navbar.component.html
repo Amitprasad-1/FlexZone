@@ -1,0 +1,43 @@
+<nav class="h-16 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30">
+  <div class="flex items-center gap-3">
+    <a routerLink="/" class="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent tracking-wide">
+      <img src="logo.jpg" alt="FlexFit Logo" class="h-8 w-8 rounded-full border border-amber-500/40 object-cover" />
+      <span>FLEXFIT <span class="text-xs text-amber-500 font-semibold uppercase px-1.5 py-0.5 rounded bg-amber-500/10 ml-1">Asansol</span></span>
+    </a>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <ng-container *ngIf="authService.isLoggedIn(); else guestTpl">
+      <div class="flex items-center gap-3">
+        <!-- User Profile Card -->
+        <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-800/40 border border-slate-700/50 hidden sm:flex">
+          <div class="h-7 w-7 rounded-full bg-gradient-to-tr from-amber-500/20 to-amber-400/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold uppercase text-xs select-none">
+            {{ authService.getUserName().charAt(0) }}
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-xs font-semibold text-slate-200 capitalize leading-tight">{{ authService.getUserName() }}</span>
+            <span class="text-[9px] font-bold text-slate-400 tracking-wider leading-tight uppercase">{{ authService.getRole() }}</span>
+          </div>
+        </div>
+        <a 
+          [routerLink]="authService.getRole() === 'ADMIN' ? '/admin' : '/member'"
+          class="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 hover:shadow-lg hover:shadow-amber-500/20 active:scale-95 transition-all text-xs font-bold"
+        >
+          Dashboard
+        </a>
+        <button 
+          (click)="onLogout()" 
+          class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-400/50 transition-all text-xs font-medium active:scale-95"
+        >
+          Sign Out
+        </button>
+      </div>
+    </ng-container>
+    <ng-template #guestTpl>
+      <div class="flex items-center gap-3">
+        <a routerLink="/login" class="text-xs font-semibold text-slate-300 hover:text-amber-400 transition-all">Sign In</a>
+        <a routerLink="/signup" class="btn-gold text-xs px-3 py-1.5">Join Gym</a>
+      </div>
+    </ng-template>
+  </div>
+</nav>

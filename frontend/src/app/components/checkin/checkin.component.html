@@ -1,0 +1,92 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Title Header -->
+  <div class="border-b border-slate-800 pb-5">
+    <h1 class="text-3xl font-extrabold text-white font-outfit">Contactless check-in center</h1>
+    <p class="text-slate-400 text-sm mt-1">Simulate front desk barcode scanning or verify daily member check-ins.</p>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="errorMessage" class="p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 text-sm">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-sm">
+    {{ successMessage }}
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- QR VIEW FINDER SIMULATION -->
+    <div class="lg:col-span-1 p-6 rounded-2xl glass-panel space-y-5 h-fit">
+      <h2 class="text-base font-bold text-white uppercase tracking-wider">Simulated scan terminal</h2>
+      
+      <!-- Camera square simulator -->
+      <div class="relative aspect-square w-full bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex flex-col items-center justify-center p-4">
+        <!-- Viewfinder Corners -->
+        <div class="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-amber-400"></div>
+        <div class="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-amber-400"></div>
+        <div class="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-amber-400"></div>
+        <div class="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-amber-400"></div>
+
+        <!-- Scanning red laser line animation -->
+        <div class="absolute left-4 right-4 h-0.5 bg-red-500 opacity-60 animate-bounce top-1/2"></div>
+        
+        <svg class="h-12 w-12 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        </svg>
+        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mt-4">Place code under scanner</span>
+      </div>
+
+      <!-- Scan submission -->
+      <form (ngSubmit)="onSubmitCheckIn()" #scanForm="ngForm" class="space-y-3 text-xs">
+        <div>
+          <label for="memberId" class="block text-slate-400 mb-1.5 uppercase font-semibold">Enter Member Account ID</label>
+          <input 
+            type="number" 
+            id="memberId" 
+            name="memberId" 
+            [(ngModel)]="memberIdInput" 
+            required 
+            class="w-full px-3 py-2.5 rounded bg-slate-900 border border-slate-700 text-slate-200 outline-none focus:border-amber-400 text-xs"
+            placeholder="e.g. 2"
+          >
+        </div>
+
+        <button type="submit" [disabled]="!scanForm.form.valid || loading" class="w-full py-2.5 rounded btn-gold text-xs font-bold transition-all flex items-center justify-center gap-2">
+          <span *ngIf="loading" class="animate-spin h-3.5 w-3.5 border-t-2 border-slate-950 rounded-full"></span>
+          <span>Submit check-in Scan</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- DAILY ATTENDANCE LEDGER -->
+    <div class="lg:col-span-2 p-6 rounded-2xl glass-panel space-y-4">
+      <h2 class="text-base font-bold text-white uppercase tracking-wider">Today's Gym Entry logs</h2>
+      
+      <div class="max-h-[460px] overflow-y-auto pr-1">
+        <div *ngIf="todayCheckIns.length === 0" class="text-center text-slate-500 text-xs py-20">
+          No entries registered for today.
+        </div>
+
+        <table *ngIf="todayCheckIns.length > 0" class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+              <th class="py-3">Member Name</th>
+              <th class="py-3">Check-In Time</th>
+              <th class="py-3">Verified By (Staff)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/80">
+            <tr *ngFor="let checkin of todayCheckIns" class="text-slate-300">
+              <td class="py-3 font-semibold text-slate-100">{{ checkin.memberName }}</td>
+              <td class="py-3">{{ checkin.checkInTime | date:'mediumTime' }}</td>
+              <td class="py-3">
+                <span class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px] text-slate-400">
+                  {{ checkin.verifiedByAdminName }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

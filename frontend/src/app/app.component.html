@@ -1,0 +1,11 @@
+<div class="min-h-screen bg-slate-950 flex flex-col font-outfit text-slate-100">
+  <app-navbar></app-navbar>
+
+  <div class="flex flex-1">
+    <app-sidebar *ngIf="showSidebar"></app-sidebar>
+
+    <main class="flex-1 min-w-0 bg-slate-950" [class.pb-16]="showSidebar" [class.md:pb-0]="showSidebar">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
