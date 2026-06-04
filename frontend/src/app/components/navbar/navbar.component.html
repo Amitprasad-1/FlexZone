@@ -7,6 +7,21 @@
   </div>
 
   <div class="flex items-center gap-4">
+    <!-- PWA Install Button (Desktop) -->
+    <button 
+      *ngIf="canInstall"
+      (click)="installApp()" 
+      class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-slate-950 active:scale-95 transition-all text-xs font-semibold"
+      title="Install FlexZone App"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      <span class="hidden sm:inline">Install App</span>
+    </button>
+
     <ng-container *ngIf="authService.isLoggedIn(); else guestTpl">
       <div class="flex items-center gap-3">
         <!-- User Profile Card -->
@@ -41,3 +56,39 @@
     </ng-template>
   </div>
 </nav>
+
+<!-- PWA Install Banner for Mobile -->
+<div 
+  *ngIf="canInstall && showMobileBanner" 
+  class="md:hidden fixed top-20 left-4 right-4 z-50 p-4 rounded-xl border border-slate-700/50 bg-slate-900/95 backdrop-blur-md shadow-2xl flex items-center justify-between gap-3"
+>
+  <div class="flex items-center gap-3">
+    <div class="h-10 w-10 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 shadow-md flex-shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+      </svg>
+    </div>
+    <div class="flex flex-col text-left">
+      <h4 class="text-xs font-bold text-slate-100 leading-tight">Install FlexZone App</h4>
+      <p class="text-[10px] text-slate-400 leading-normal mt-0.5">Add to home screen for booking & tracking classes!</p>
+    </div>
+  </div>
+  <div class="flex items-center gap-2 flex-shrink-0">
+    <button 
+      (click)="installApp()" 
+      class="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 active:scale-95 transition-all text-[11px] font-bold"
+    >
+      Install
+    </button>
+    <button 
+      (click)="dismissBanner()" 
+      class="h-6 w-6 rounded-md hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-all"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+</div>
