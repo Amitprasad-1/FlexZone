@@ -112,4 +112,18 @@ public class AuthService {
 
         return savedUser;
     }
+
+    public void verifyEmail(String email) {
+        if (!userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Email address not found!");
+        }
+    }
+
+    @Transactional
+    public void resetPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }

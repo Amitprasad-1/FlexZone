@@ -3,6 +3,8 @@ package com.flexzone.controller;
 import com.flexzone.dto.JwtResponse;
 import com.flexzone.dto.LoginRequest;
 import com.flexzone.dto.SignupRequest;
+import com.flexzone.dto.ForgotPasswordRequest;
+import com.flexzone.dto.ResetPasswordRequest;
 import com.flexzone.entity.User;
 import com.flexzone.service.AuthService;
 import jakarta.validation.Valid;
@@ -32,6 +34,26 @@ public class AuthController {
         try {
             User user = authService.registerUser(signupRequest);
             return ResponseEntity.ok("User registered successfully with username: " + user.getUsername());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        try {
+            authService.verifyEmail(request.getEmail());
+            return ResponseEntity.ok("Email verified. You can now reset your password.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            authService.resetPassword(request.getEmail(), request.getNewPassword());
+            return ResponseEntity.ok("Password reset successfully!");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

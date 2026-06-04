@@ -68,4 +68,12 @@ export class AuthService {
     const user = this.currentUserValue;
     return user ? user.username : ''; // fallback
   }
+
+  forgotPassword(email: string): Observable<string> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email }, { responseType: 'text' });
+  }
+
+  resetPassword(email: string, newPassword: string): Observable<string> {
+    return this.http.post(`${this.apiUrl}/reset-password`, { email, newPassword }, { responseType: 'text' });
+  }
 }
