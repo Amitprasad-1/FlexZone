@@ -36,7 +36,13 @@ export class ForgotPasswordComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error || 'Email verification failed. Please try again.';
+        if (err && typeof err.error === 'string') {
+          this.errorMessage = err.error;
+        } else if (err && err.error && err.error.message) {
+          this.errorMessage = err.error.message;
+        } else {
+          this.errorMessage = 'Email verification failed. Please try again.';
+        }
       }
     });
   }
@@ -67,7 +73,13 @@ export class ForgotPasswordComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error || 'Failed to reset password. Please try again.';
+        if (err && typeof err.error === 'string') {
+          this.errorMessage = err.error;
+        } else if (err && err.error && err.error.message) {
+          this.errorMessage = err.error.message;
+        } else {
+          this.errorMessage = 'Failed to reset password. Please try again.';
+        }
       }
     });
   }
