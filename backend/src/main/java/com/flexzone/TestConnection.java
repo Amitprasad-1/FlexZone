@@ -1,33 +1,35 @@
 package com.flexzone;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.PreparedStatement;
 
 public class TestConnection {
     public static void main(String[] args) {
         String host = "bw91k5yvi9zoqz3si326-mysql.services.clever-cloud.com";
         String database = "bw91k5yvi9zoqz3si326";
-        
-        String[] users = {"uwn6eas4ot1wu2b0", "uwn6eas4otlwu2b0"};
-        String[] passwords = {"Bn7jh23Iu9NIA1JHMvgk", "Bn7jh23lu9NIA1JHMvgk"};
-        
-        for (String user : users) {
-            for (String password : passwords) {
-                String url = "jdbc:mysql://" + host + ":3306/" + database + "?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-                System.out.println("Testing Java JDBC: User=" + user + ", Password=" + password);
-                try {
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    try (Connection conn = DriverManager.getConnection(url, user, password)) {
-                        System.out.println("SUCCESS!!! Connected successfully with User=" + user + ", Password=" + password);
-                        return;
-                    }
-                } catch (ClassNotFoundException e) {
-                    System.err.println("Driver class not found: " + e.getMessage());
-                } catch (SQLException e) {
-                    System.err.println("SQL Exception: " + e.getMessage());
-                }
+        String user = "uwn6eas4otlwu2b0";
+        String password = "Bn7jh23Iu9NIAIJHMVgk";
+        String url = "jdbc:mysql://" + host + ":3306/" + database + "?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String generatedHash = encoder.encode("admin123");
+        System.out.println("Generated BCrypt Hash for 'admin123': " + generatedHash);
+
+        System.out.println("Resetting admin password in database...");
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            try (Connection conn = DriverManager.getConnection(url, user, password);
+                 PreparedStatement pstmt = conn.prepareStatement(
+                         "UPDATE users SET password = ? WHERE username = 'admin'")) {
+                
+                pstmt.setString(1, generatedHash);
+                int rows = pstmt.executeUpdate();
+                System.out.println("Updated " + rows + " row(s).");
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
