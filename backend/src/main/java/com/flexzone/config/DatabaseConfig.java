@@ -54,7 +54,8 @@ public class DatabaseConfig {
         config.setUsername(username);
         config.setPassword(password);
         
-        config.setMaximumPoolSize(10);
+        config.setMaximumPoolSize(2);
+        config.setMinimumIdle(1);
         config.setIdleTimeout(30000);
         config.setConnectionTimeout(20000);
         
