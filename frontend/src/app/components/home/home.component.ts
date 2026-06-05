@@ -81,7 +81,7 @@ export class HomeComponent {
         'Unrestricted 24/7 Floor & Gym Access',
         '3 Days/Week Personal Trainer Session',
         'Unlimited Specialized Class Bookings',
-        'Welcome Kit (FlexFit T-Shirt + Shaker)',
+        'Welcome Kit (FlexZone T-Shirt + Shaker)',
         'Monthly Health Review & Adjustments'
       ]
     }
