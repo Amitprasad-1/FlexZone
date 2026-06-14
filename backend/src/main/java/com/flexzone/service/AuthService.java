@@ -103,9 +103,7 @@ public class AuthService {
                 MembershipPlan plan = membershipPlanRepository.findById(signupRequest.getMembershipPlanId())
                         .orElseThrow(() -> new RuntimeException("Membership Plan not found"));
                 memberProfile.setMembershipPlan(plan);
-                memberProfile.setMembershipStatus("ACTIVE");
-                memberProfile.setMembershipStartDate(LocalDate.now());
-                memberProfile.setMembershipEndDate(LocalDate.now().plusDays(plan.getDurationDays()));
+                memberProfile.setMembershipStatus("PENDING");
             }
 
             memberProfileRepository.save(memberProfile);

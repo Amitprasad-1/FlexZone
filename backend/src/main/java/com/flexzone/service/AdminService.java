@@ -102,10 +102,6 @@ public class AdminService {
         user.setEmail(dto.getEmail());
         userRepository.save(user);
 
-        profile.setMembershipStatus(dto.getMembershipStatus());
-        profile.setMembershipStartDate(dto.getMembershipStartDate());
-        profile.setMembershipEndDate(dto.getMembershipEndDate());
-
         if (dto.getMembershipPlanId() != null) {
             MembershipPlan plan = membershipPlanRepository.findById(dto.getMembershipPlanId())
                     .orElseThrow(() -> new RuntimeException("Plan not found"));
@@ -113,6 +109,23 @@ public class AdminService {
         } else {
             profile.setMembershipPlan(null);
         }
+
+        profile.setMembershipStatus(dto.getMembershipStatus());
+
+        LocalDate startDate = dto.getMembershipStartDate();
+        LocalDate endDate = dto.getMembershipEndDate();
+
+        if ("ACTIVE".equals(dto.getMembershipStatus())) {
+            if (startDate == null) {
+                startDate = LocalDate.now();
+            }
+            if (endDate == null && profile.getMembershipPlan() != null) {
+                endDate = startDate.plusDays(profile.getMembershipPlan().getDurationDays());
+            }
+        }
+
+        profile.setMembershipStartDate(startDate);
+        profile.setMembershipEndDate(endDate);
 
         if (dto.getAssignedTrainerId() != null) {
             TrainerProfile trainer = trainerProfileRepository.findById(dto.getAssignedTrainerId())
