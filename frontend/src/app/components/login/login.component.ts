@@ -14,6 +14,7 @@ export class LoginComponent {
   credentials = { username: '', password: '' };
   errorMessage = '';
   loading = false;
+  showPassword = false;
 
   constructor(private authService: AuthService, private router: Router) {
     if (this.authService.isLoggedIn()) {

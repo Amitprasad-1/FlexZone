@@ -23,6 +23,7 @@ export class SignupComponent {
   successMessage = '';
   errorMessage = '';
   loading = false;
+  showPassword = false;
 
   constructor(private authService: AuthService, private router: Router) {
     if (this.authService.isLoggedIn()) {
