@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DriverManager;
 
 @Configuration
 public class DatabaseConfig {
@@ -29,6 +31,7 @@ public class DatabaseConfig {
         String connectionUrl = defaultUrl;
         String username = defaultUsername;
         String password = defaultPassword;
+        String driverToUse = driverClassName;
 
         if (mysqlAddonUri != null && !mysqlAddonUri.trim().isEmpty()) {
             ParsedUri parsed = parseConnectionUri(mysqlAddonUri);
@@ -46,10 +49,32 @@ public class DatabaseConfig {
             }
         }
 
+        // Auto-detect PostgreSQL urls to select correct driver
+        if (connectionUrl != null && connectionUrl.startsWith("jdbc:postgresql://")) {
+            driverToUse = "org.postgresql.Driver";
+        }
+
         System.out.println("Configuring DataSource: URL=" + connectionUrl + ", Username=" + username);
 
+        // Test connection to the primary database
+        try {
+            Class.forName(driverToUse);
+            // 2-second timeout to test connection fast
+            DriverManager.setLoginTimeout(2);
+            try (Connection conn = DriverManager.getConnection(connectionUrl, username, password)) {
+                System.out.println(">>> Primary database connection successful! Using " + connectionUrl);
+            }
+        } catch (Exception e) {
+            System.err.println(">>> Failed to connect to primary database: " + e.getMessage());
+            System.out.println(">>> FALLING BACK to local persistent H2 database (flexzone_db.mv.db)");
+            connectionUrl = "jdbc:h2:file:./flexzone_db;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;NON_KEYWORDS=KEY,VALUE";
+            username = "sa";
+            password = "";
+            driverToUse = "org.h2.Driver";
+        }
+
         HikariConfig config = new HikariConfig();
-        config.setDriverClassName(driverClassName);
+        config.setDriverClassName(driverToUse);
         config.setJdbcUrl(connectionUrl);
         config.setUsername(username);
         config.setPassword(password);
