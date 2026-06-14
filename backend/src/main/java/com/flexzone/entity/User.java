@@ -32,6 +32,9 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(name = "profile_picture", columnDefinition = "LONGTEXT")
+    private String profilePicture;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 }

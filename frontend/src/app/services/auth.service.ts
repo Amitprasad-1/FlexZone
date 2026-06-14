@@ -69,6 +69,11 @@ export class AuthService {
     return user ? user.username : ''; // fallback
   }
 
+  getProfilePicture(): string {
+    const user = this.currentUserValue;
+    return user ? user.profilePicture : '';
+  }
+
   forgotPassword(email: string): Observable<string> {
     return this.http.post(`${this.apiUrl}/forgot-password`, { email }, { responseType: 'text' });
   }

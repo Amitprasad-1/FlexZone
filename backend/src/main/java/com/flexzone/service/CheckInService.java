@@ -52,6 +52,7 @@ public class CheckInService {
                 .memberName(saved.getMember().getUser().getFullName())
                 .checkInTime(saved.getCheckInTime())
                 .verifiedByAdminName(admin.getFullName())
+                .profilePicture(saved.getMember().getUser().getProfilePicture())
                 .build();
     }
 
@@ -65,6 +66,7 @@ public class CheckInService {
                         .memberName(a.getMember().getUser().getFullName())
                         .checkInTime(a.getCheckInTime())
                         .verifiedByAdminName(a.getVerifiedByAdmin().getFullName())
+                        .profilePicture(a.getMember().getUser().getProfilePicture())
                         .build())
                 .collect(Collectors.toList());
     }

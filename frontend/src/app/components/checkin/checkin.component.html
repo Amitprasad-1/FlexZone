@@ -76,7 +76,13 @@
           </thead>
           <tbody class="divide-y divide-slate-800/80">
             <tr *ngFor="let checkin of todayCheckIns" class="text-slate-300">
-              <td class="py-3 font-semibold text-slate-100">{{ checkin.memberName }}</td>
+              <td class="py-3 font-semibold text-slate-100 flex items-center gap-3">
+                <img *ngIf="checkin.profilePicture" [src]="checkin.profilePicture" class="h-8 w-8 rounded-full object-cover border border-slate-800 select-none">
+                <div *ngIf="!checkin.profilePicture" class="h-8 w-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500 font-bold uppercase select-none">
+                  {{ checkin.memberName.charAt(0) }}
+                </div>
+                <span>{{ checkin.memberName }}</span>
+              </td>
               <td class="py-3">{{ checkin.checkInTime | date:'mediumTime' }}</td>
               <td class="py-3">
                 <span class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px] text-slate-400">

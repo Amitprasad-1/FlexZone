@@ -201,7 +201,13 @@
         </thead>
         <tbody class="divide-y divide-slate-800">
           <tr *ngFor="let m of members" class="hover:bg-slate-800/20 text-slate-300">
-            <td class="p-4 font-semibold text-slate-100">{{ m.fullName }}</td>
+            <td class="p-4 font-semibold text-slate-100 flex items-center gap-3">
+              <img *ngIf="m.profilePicture" [src]="m.profilePicture" class="h-8 w-8 rounded-full object-cover border border-slate-700 select-none">
+              <div *ngIf="!m.profilePicture" class="h-8 w-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500 font-bold uppercase select-none">
+                {{ m.fullName.charAt(0) }}
+              </div>
+              <span>{{ m.fullName }}</span>
+            </td>
             <td class="p-4">
               <p>{{ m.username }}</p>
               <p class="text-[10px] text-slate-500">{{ m.email }}</p>

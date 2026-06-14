@@ -11,4 +11,5 @@ public class CheckInDTO {
     private String memberName;
     private LocalDateTime checkInTime;
     private String verifiedByAdminName;
+    private String profilePicture;
 }

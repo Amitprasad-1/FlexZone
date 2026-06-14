@@ -59,7 +59,7 @@ public class AuthService {
 
         String jwt = tokenProvider.generateToken(authentication, user.getRole().name());
 
-        return new JwtResponse(jwt, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
+        return new JwtResponse(jwt, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name(), user.getProfilePicture());
     }
 
     @Transactional
@@ -80,6 +80,7 @@ public class AuthService {
                 .email(signupRequest.getEmail())
                 .fullName(signupRequest.getFullName())
                 .role(role)
+                .profilePicture(signupRequest.getProfilePicture())
                 .build();
 
         User savedUser = userRepository.save(user);

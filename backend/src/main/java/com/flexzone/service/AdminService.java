@@ -250,6 +250,7 @@ public class AdminService {
                 .membershipEndDate(profile.getMembershipEndDate())
                 .assignedTrainerId(profile.getAssignedTrainer() != null ? profile.getAssignedTrainer().getId() : null)
                 .assignedTrainerName(profile.getAssignedTrainer() != null ? profile.getAssignedTrainer().getUser().getFullName() : "Unassigned")
+                .profilePicture(profile.getUser().getProfilePicture())
                 .build();
     }
 }

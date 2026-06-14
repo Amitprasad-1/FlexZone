@@ -26,7 +26,8 @@
       <div class="flex items-center gap-3">
         <!-- User Profile Card -->
         <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-800/40 border border-slate-700/50 hidden sm:flex">
-          <div class="h-7 w-7 rounded-full bg-gradient-to-tr from-amber-500/20 to-amber-400/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold uppercase text-xs select-none">
+          <img *ngIf="authService.getProfilePicture()" [src]="authService.getProfilePicture()" class="h-7 w-7 rounded-full object-cover border border-amber-500/30 select-none">
+          <div *ngIf="!authService.getProfilePicture()" class="h-7 w-7 rounded-full bg-gradient-to-tr from-amber-500/20 to-amber-400/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold uppercase text-xs select-none">
             {{ authService.getUserName().charAt(0) }}
           </div>
           <div class="flex flex-col text-left">

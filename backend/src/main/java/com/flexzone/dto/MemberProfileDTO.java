@@ -18,4 +18,5 @@ public class MemberProfileDTO {
     private LocalDate membershipEndDate;
     private Long assignedTrainerId;
     private String assignedTrainerName;
+    private String profilePicture;
 }

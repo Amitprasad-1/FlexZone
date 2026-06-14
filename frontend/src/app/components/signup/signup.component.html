@@ -19,6 +19,31 @@
       {{ successMessage }}
     </div>
 
+    <!-- PROFILE PICTURE SECTION -->
+    <div class="flex flex-col items-center mb-6">
+      <div class="relative group">
+        <div 
+          (click)="fileInput.click()"
+          class="w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-slate-700 hover:border-amber-400 bg-slate-900 flex items-center justify-center cursor-pointer transition-all duration-300 relative"
+        >
+          <img *ngIf="user.profilePicture" [src]="user.profilePicture" class="w-full h-full object-cover">
+          <div *ngIf="!user.profilePicture" class="text-center text-slate-400 text-[10px] flex flex-col items-center p-2">
+            <svg class="h-6 w-6 mb-1 text-slate-500 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span class="font-bold text-[9px] uppercase tracking-wider">Photo</span>
+          </div>
+          <!-- Upload overlay on hover -->
+          <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200">
+            <span class="text-[9px] font-bold text-amber-400 uppercase tracking-widest">Change</span>
+          </div>
+        </div>
+      </div>
+      <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden">
+      <p class="text-[10px] text-slate-500 mt-2">Upload profile picture (Max 5MB)</p>
+    </div>
+
     <form (ngSubmit)="onSubmit()" #signupForm="ngForm" class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -156,6 +181,63 @@
         Already have an account? 
         <a routerLink="/login" class="text-amber-400 hover:text-amber-300 font-semibold transition-all">Sign In</a>
       </p>
+    </div>
+  </div>
+
+  <!-- LIGHTWEIGHT CANVAS IMAGE CROPPER MODAL -->
+  <div *ngIf="showCropper" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-md p-6 rounded-2xl glass-panel shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Crop Profile Photo</h3>
+        <button (click)="closeCropper()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <!-- Crop Canvas area -->
+      <div class="relative w-full aspect-square bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center cursor-move touch-none"
+           (mousedown)="startDrag($event)"
+           (mousemove)="drag($event)"
+           (mouseup)="endDrag()"
+           (mouseleave)="endDrag()"
+           (touchstart)="startDrag($event)"
+           (touchmove)="drag($event)"
+           (touchend)="endDrag()">
+        
+        <!-- Mask circle showing what gets cropped -->
+        <div class="absolute inset-0 border-[32px] border-slate-950/70 pointer-events-none z-10 flex items-center justify-center">
+          <div class="w-full aspect-square rounded-full border border-amber-400/50 box-content"></div>
+        </div>
+        
+        <!-- Image canvas -->
+        <canvas #cropCanvas class="max-w-full max-h-full"></canvas>
+      </div>
+
+      <!-- Sliders & Controls -->
+      <div class="space-y-4">
+        <div class="space-y-1">
+          <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase">
+            <span>Zoom Scale</span>
+            <span>{{ zoomScale }}x</span>
+          </div>
+          <input 
+            type="range" 
+            [min]="0.5" 
+            [max]="3" 
+            step="0.05" 
+            [(ngModel)]="zoomScale" 
+            (input)="redraw()"
+            class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-400"
+          >
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="button" (click)="closeCropper()" class="flex-1 py-2.5 rounded bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 font-bold text-xs uppercase tracking-wider transition-all">
+          Cancel
+        </button>
+        <button type="button" (click)="applyCrop()" class="flex-1 py-2.5 rounded btn-gold font-bold text-xs uppercase tracking-wider transition-all">
+          Crop & Save
+        </button>
+      </div>
     </div>
   </div>
 </div>

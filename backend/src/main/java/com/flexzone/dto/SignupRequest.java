@@ -32,4 +32,6 @@ public class SignupRequest {
 
     // Member specific fields
     private Long membershipPlanId;
+
+    private String profilePicture;
 }
