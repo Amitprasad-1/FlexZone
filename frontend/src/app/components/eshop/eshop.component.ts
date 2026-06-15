@@ -18,11 +18,28 @@ export class EShopComponent implements OnInit {
   // Checkout flow state
   selectedPlan: any = null; // populated if renewing membership
   paymentType: 'MEMBERSHIP_RENEWAL' | 'PRODUCT_PURCHASE' = 'PRODUCT_PURCHASE';
-  paymentMethod: 'RAZORPAY' | 'PAYTM' = 'RAZORPAY';
+  paymentMethod: 'RAZORPAY' | 'PAYTM' | 'CARD' | 'UPI' = 'RAZORPAY';
   
   showCheckoutModal = false;
   checkoutProgress = 0;
   checkoutStatus: 'IDLE' | 'PROCESSING' | 'SUCCESS' | 'FAILED' = 'IDLE';
+
+  // Extended simulation state fields
+  checkoutStep: 'SELECT' | 'UPI' | 'CARD' | 'OTP' = 'SELECT';
+  cardForm = {
+    holderName: '',
+    cardNumber: '',
+    expiry: '',
+    cvv: ''
+  };
+  cardError = '';
+  otpCode = '';
+  otpError = '';
+  otpTimer = 60;
+  otpInterval: any = null;
+  upiTimer = 45;
+  upiInterval: any = null;
+  selectedUpiApp = '';
 
   loading = true;
   errorMessage = '';
@@ -125,6 +142,7 @@ export class EShopComponent implements OnInit {
     this.checkoutStatus = 'IDLE';
     this.checkoutProgress = 0;
     this.errorMessage = '';
+    this.cleanupTimers();
   }
 
   openPlanRenewal(plan: any): void {
@@ -134,6 +152,7 @@ export class EShopComponent implements OnInit {
     this.checkoutStatus = 'IDLE';
     this.checkoutProgress = 0;
     this.errorMessage = '';
+    this.cleanupTimers();
   }
 
   getCheckoutAmount(): number {
@@ -143,11 +162,136 @@ export class EShopComponent implements OnInit {
     return this.getCartTotal();
   }
 
+  selectMethod(method: 'RAZORPAY' | 'PAYTM' | 'CARD' | 'UPI'): void {
+    this.paymentMethod = (method === 'CARD' || method === 'UPI') ? 'RAZORPAY' : method;
+    if (method === 'UPI') {
+      this.checkoutStep = 'UPI';
+      this.startUpiTimer();
+    } else if (method === 'CARD') {
+      this.checkoutStep = 'CARD';
+      this.cardError = '';
+    } else {
+      this.processMockPayment();
+    }
+  }
+
+  // UPI Simulation
+  getUpiQrUrl(): string {
+    const amount = this.getCheckoutAmount();
+    const upiLink = `upi://pay?pa=flexzone@ybl&pn=FlexZone%20Gym%20Checkout&am=${amount.toFixed(2)}&cu=INR`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=251-191-36&bgcolor=3-7-18&data=${encodeURIComponent(upiLink)}`;
+  }
+
+  startUpiTimer(): void {
+    this.upiTimer = 45;
+    if (this.upiInterval) clearInterval(this.upiInterval);
+    this.upiInterval = setInterval(() => {
+      this.upiTimer--;
+      if (this.upiTimer <= 0) {
+        clearInterval(this.upiInterval);
+      }
+    }, 1000);
+  }
+
+  simulateUpiRedirect(app: string): void {
+    this.selectedUpiApp = app;
+    this.checkoutStatus = 'PROCESSING';
+    this.checkoutProgress = 10;
+    
+    let count = 0;
+    const interval = setInterval(() => {
+      count += 20;
+      this.checkoutProgress = count;
+      if (count >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          this.submitPaymentToBackend();
+        }, 800);
+      }
+    }, 300);
+  }
+
+  // Card Payment validation & OTP flow
+  validateCardAndPay(): void {
+    this.cardError = '';
+    const name = this.cardForm.holderName.trim();
+    const num = this.cardForm.cardNumber.replace(/\s+/g, '');
+    const expiry = this.cardForm.expiry.trim();
+    const cvv = this.cardForm.cvv.trim();
+
+    if (!name) {
+      this.cardError = 'Cardholder name is required.';
+      return;
+    }
+    if (num.length !== 16 || !/^\d+$/.test(num)) {
+      this.cardError = 'Invalid card number. Must be 16 digits.';
+      return;
+    }
+    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+      this.cardError = 'Invalid expiry format. Use MM/YY.';
+      return;
+    }
+    const [mm, yy] = expiry.split('/').map(Number);
+    if (mm < 1 || mm > 12) {
+      this.cardError = 'Invalid expiry month.';
+      return;
+    }
+    if (cvv.length !== 3 || !/^\d+$/.test(cvv)) {
+      this.cardError = 'Invalid CVV. Must be 3 digits.';
+      return;
+    }
+
+    // Advance to simulated 3DS OTP step
+    this.checkoutStep = 'OTP';
+    this.otpCode = '';
+    this.otpError = '';
+    this.startOtpTimer();
+  }
+
+  startOtpTimer(): void {
+    this.otpTimer = 60;
+    if (this.otpInterval) clearInterval(this.otpInterval);
+    this.otpInterval = setInterval(() => {
+      this.otpTimer--;
+      if (this.otpTimer <= 0) {
+        clearInterval(this.otpInterval);
+      }
+    }, 1000);
+  }
+
+  resendOtp(): void {
+    this.otpError = '';
+    this.otpCode = '';
+    this.startOtpTimer();
+  }
+
+  verifyOtpAndPay(): void {
+    this.otpError = '';
+    if (this.otpCode.length !== 6 || !/^\d+$/.test(this.otpCode)) {
+      this.otpError = 'OTP must be a 6-digit number.';
+      return;
+    }
+
+    this.checkoutStatus = 'PROCESSING';
+    this.checkoutProgress = 10;
+
+    const interval = setInterval(() => {
+      if (this.checkoutProgress < 90) {
+        this.checkoutProgress += 30;
+      }
+    }, 250);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      this.checkoutProgress = 100;
+      this.submitPaymentToBackend();
+    }, 1200);
+  }
+
   processMockPayment(): void {
     this.checkoutStatus = 'PROCESSING';
     this.checkoutProgress = 10;
     
-    // Animate progress bar to simulate gateway connection
     const interval = setInterval(() => {
       if (this.checkoutProgress < 90) {
         this.checkoutProgress += 20;
@@ -182,16 +326,28 @@ export class EShopComponent implements OnInit {
         this.checkoutStatus = 'SUCCESS';
         this.cart = [];
         this.loadCatalog(); // reload product stocks
+        this.cleanupTimers();
       },
       error: err => {
         this.checkoutStatus = 'FAILED';
         this.errorMessage = 'Checkout transaction failed: ' + (err.error || err.message);
+        this.cleanupTimers();
       }
     });
+  }
+
+  cleanupTimers(): void {
+    if (this.otpInterval) clearInterval(this.otpInterval);
+    if (this.upiInterval) clearInterval(this.upiInterval);
+    this.cardForm = { holderName: '', cardNumber: '', expiry: '', cvv: '' };
+    this.otpCode = '';
+    this.checkoutStep = 'SELECT';
+    this.selectedUpiApp = '';
   }
 
   closeCheckoutModal(): void {
     this.showCheckoutModal = false;
     this.checkoutStatus = 'IDLE';
+    this.cleanupTimers();
   }
 }
