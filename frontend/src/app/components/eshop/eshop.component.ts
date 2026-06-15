@@ -25,7 +25,8 @@ export class EShopComponent implements OnInit {
   checkoutStatus: 'IDLE' | 'PROCESSING' | 'SUCCESS' | 'FAILED' = 'IDLE';
 
   // Extended simulation state fields
-  checkoutStep: 'SELECT' | 'UPI' | 'CARD' | 'OTP' = 'SELECT';
+  checkoutStep: 'SELECT' | 'UPI' | 'CARD' | 'OTP' = 'CARD';
+  activeTab: 'CARD' | 'UPI' | 'RAZORPAY' | 'PAYTM' = 'CARD';
   cardForm = {
     holderName: '',
     cardNumber: '',
@@ -341,8 +342,62 @@ export class EShopComponent implements OnInit {
     if (this.upiInterval) clearInterval(this.upiInterval);
     this.cardForm = { holderName: '', cardNumber: '', expiry: '', cvv: '' };
     this.otpCode = '';
-    this.checkoutStep = 'SELECT';
+    this.checkoutStep = 'CARD';
+    this.activeTab = 'CARD';
     this.selectedUpiApp = '';
+  }
+
+  setTab(tab: 'CARD' | 'UPI' | 'RAZORPAY' | 'PAYTM'): void {
+    if (this.checkoutStep === 'OTP') {
+      return;
+    }
+    this.activeTab = tab;
+    if (this.upiInterval) clearInterval(this.upiInterval);
+    this.upiTimer = 45;
+    this.selectedUpiApp = '';
+    this.cardError = '';
+    this.otpError = '';
+    
+    this.paymentMethod = (tab === 'CARD' || tab === 'UPI') ? 'RAZORPAY' : tab;
+    if (tab === 'UPI') {
+      this.checkoutStep = 'UPI';
+      this.startUpiTimer();
+    } else if (tab === 'CARD') {
+      this.checkoutStep = 'CARD';
+    } else {
+      this.checkoutStep = 'SELECT';
+    }
+  }
+
+  formatCardNumber(): void {
+    let value = this.cardForm.cardNumber.replace(/\D/g, '');
+    value = value.substring(0, 16);
+    const chunks = value.match(/.{1,4}/g);
+    this.cardForm.cardNumber = chunks ? chunks.join(' ') : value;
+  }
+
+  formatExpiry(): void {
+    let value = this.cardForm.expiry.replace(/\D/g, '');
+    value = value.substring(0, 4);
+    if (value.length > 2) {
+      this.cardForm.expiry = value.substring(0, 2) + '/' + value.substring(2);
+    } else {
+      this.cardForm.expiry = value;
+    }
+  }
+
+  formatCvv(): void {
+    this.cardForm.cvv = this.cardForm.cvv.replace(/\D/g, '').substring(0, 3);
+  }
+
+  getCardType(): string {
+    const num = this.cardForm.cardNumber.replace(/\s+/g, '');
+    if (!num) return 'unknown';
+    if (num.startsWith('4')) return 'visa';
+    if (/^5[1-5]/.test(num)) return 'mastercard';
+    if (/^(60|65|81|82|508)/.test(num)) return 'rupay';
+    if (/^(5018|5020|5038|6304|6759|6761|6763)/.test(num)) return 'maestro';
+    return 'unknown';
   }
 
   closeCheckoutModal(): void {

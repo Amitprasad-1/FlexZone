@@ -146,280 +146,455 @@
 
     </div>
   </ng-container>
-<<!-- ==================== CHECKOUT & PAYMENT MODAL OVERLAY ==================== -->
-<div *ngIf="showCheckoutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-  <div class="w-full max-w-md p-6 rounded-2xl glass-panel shadow-2xl space-y-5 text-xs text-slate-300 relative my-auto">
+<!-- ==================== CHECKOUT & PAYMENT MODAL OVERLAY ==================== -->
+<div *ngIf="showCheckoutModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+  
+  <div class="w-full max-w-3xl rounded-2xl glass-panel shadow-2xl overflow-hidden flex flex-col md:flex-row border border-slate-800 my-auto">
     
-    <!-- IDLE Checkout View -->
-    <ng-container *ngIf="checkoutStatus === 'IDLE'">
+    <!-- LEFT PANEL: ORDER SUMMARY & BRANDING (40% width) -->
+    <div class="w-full md:w-5/12 bg-slate-950/80 p-5 md:p-6 border-b md:border-b-0 md:border-r border-slate-850 flex flex-col justify-between space-y-6">
       
-      <!-- Top Title and Back/Close controls -->
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-shrink-0">
-        <div class="flex items-center gap-2">
-          <button *ngIf="checkoutStep !== 'SELECT'" (click)="checkoutStep = 'SELECT'; cleanupTimers()" class="text-slate-400 hover:text-white transition-all text-sm font-bold flex items-center gap-1 select-none">
-            &larr; Back
-          </button>
-          <h3 *ngIf="checkoutStep === 'SELECT'" class="text-sm font-bold text-white uppercase tracking-wider">Checkout Payment</h3>
-          <h3 *ngIf="checkoutStep === 'CARD'" class="text-sm font-bold text-white uppercase tracking-wider">Pay via Card</h3>
-          <h3 *ngIf="checkoutStep === 'UPI'" class="text-sm font-bold text-white uppercase tracking-wider">Contactless UPI Pay</h3>
-          <h3 *ngIf="checkoutStep === 'OTP'" class="text-sm font-bold text-white uppercase tracking-wider">Bank Authentication</h3>
-        </div>
-        <button (click)="closeCheckoutModal()" class="text-slate-400 hover:text-white text-lg font-bold select-none">&times;</button>
-      </div>
-
-      <!-- Ledger Summary Box -->
-      <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-850 space-y-2">
-        <div class="flex justify-between text-[11px]">
-          <span class="text-slate-400">Payment Purpose</span>
-          <span class="font-bold text-slate-200 uppercase">{{ paymentType === 'MEMBERSHIP_RENEWAL' ? 'Membership Upgrade' : 'Product Order' }}</span>
-        </div>
-        <div *ngIf="selectedPlan" class="flex justify-between text-[11px]">
-          <span class="text-slate-400">Gym Package</span>
-          <span class="font-bold text-amber-400">{{ selectedPlan.name }}</span>
-        </div>
-        <div class="flex justify-between border-t border-slate-850 pt-2 text-sm font-extrabold">
-          <span class="text-slate-200">Amount Due</span>
-          <span class="text-amber-400">₹{{ getCheckoutAmount() | number:'1.2-2' }}</span>
-        </div>
-      </div>
-
-      <!-- Step 1: METHOD_SELECT -->
-      <div *ngIf="checkoutStep === 'SELECT'" class="space-y-4">
-        <label class="block text-slate-400 font-bold uppercase text-[9px] tracking-wider mb-2">Choose Payment Mode</label>
-        
-        <div class="space-y-3">
-          <!-- UPI Card -->
-          <button 
-            (click)="selectMethod('UPI')"
-            class="w-full p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-400/50 transition-all text-left flex items-center justify-between group"
-          >
-            <div class="space-y-1">
-              <p class="font-bold text-white group-hover:text-amber-400 transition-all">UPI Scan & App Pay</p>
-              <p class="text-[10px] text-slate-400">Pay instantly using Google Pay, PhonePe, or Paytm QR</p>
-            </div>
-            <!-- Simulating payment icons -->
-            <div class="flex gap-1.5 opacity-80">
-              <span class="px-1.5 py-0.5 rounded bg-slate-950 text-[8px] font-extrabold text-slate-400 border border-slate-800">GPAY</span>
-              <span class="px-1.5 py-0.5 rounded bg-slate-950 text-[8px] font-extrabold text-slate-400 border border-slate-800">BHIM</span>
-            </div>
-          </button>
-
-          <!-- Card Payment -->
-          <button 
-            (click)="selectMethod('CARD')"
-            class="w-full p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-400/50 transition-all text-left flex items-center justify-between group"
-          >
-            <div class="space-y-1">
-              <p class="font-bold text-white group-hover:text-amber-400 transition-all">Credit / Debit Card</p>
-              <p class="text-[10px] text-slate-400">Visa, Mastercard, RuPay, or Maestro cards supported</p>
-            </div>
-            <div class="flex gap-1.5 opacity-80">
-              <span class="px-1.5 py-0.5 rounded bg-slate-950 text-[8px] font-extrabold text-slate-400 border border-slate-800">VISA</span>
-              <span class="px-1.5 py-0.5 rounded bg-slate-950 text-[8px] font-extrabold text-slate-400 border border-slate-800">MC</span>
-            </div>
-          </button>
-
-          <!-- Razorpay / Paytm simulated direct wallets -->
-          <div class="grid grid-cols-2 gap-3 pt-1">
-            <button 
-              (click)="selectMethod('RAZORPAY')"
-              class="p-3 rounded-lg bg-slate-900 border border-slate-800 text-center font-bold hover:border-slate-700 transition-all text-[11px] text-slate-300"
-            >
-              Razorpay Simulation
-            </button>
-            <button 
-              (click)="selectMethod('PAYTM')"
-              class="p-3 rounded-lg bg-slate-900 border border-slate-800 text-center font-bold hover:border-slate-700 transition-all text-[11px] text-slate-300"
-            >
-              Paytm Wallet
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 2: UPI Flow -->
-      <div *ngIf="checkoutStep === 'UPI'" class="space-y-4 flex flex-col items-center">
-        <!-- Live Generated QR Code -->
-        <div class="p-3 bg-white rounded-2xl inline-block border border-slate-700 shadow-xl mt-2 select-none">
-          <img [src]="getUpiQrUrl()" class="h-44 w-44 object-contain" alt="UPI QR Code Payment">
-        </div>
-        
-        <p class="text-center text-[10px] text-slate-400 max-w-xs leading-relaxed">
-          Scan the QR code with GPay, PhonePe, or BHIM apps to initiate a real simulated payment transfer of 
-          <strong class="text-white">₹{{ getCheckoutAmount() | number:'1.2-2' }}</strong>.
-        </p>
-
-        <!-- Redirect Simulator Buttons -->
-        <div class="w-full space-y-2 border-t border-slate-800/80 pt-3">
-          <label class="block text-slate-500 font-bold uppercase text-[9px] tracking-wider text-center">Or pay instantly via apps</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button (click)="simulateUpiRedirect('PhonePe')" class="py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-center text-[10px] font-bold text-slate-200">
-              PhonePe
-            </button>
-            <button (click)="simulateUpiRedirect('Google Pay')" class="py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-center text-[10px] font-bold text-slate-200">
-              Google Pay
-            </button>
-            <button (click)="simulateUpiRedirect('Paytm')" class="py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-center text-[10px] font-bold text-slate-200">
-              Paytm App
-            </button>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between w-full text-[10px] border-t border-slate-800/80 pt-3 text-slate-400">
-          <span>Awaiting payment...</span>
-          <span class="font-mono text-amber-400 font-bold">{{ upiTimer }}s</span>
-        </div>
-        
-        <!-- Simulate success trigger -->
-        <button (click)="simulateUpiRedirect('QR Scan Callback')" class="w-full py-2 bg-amber-400/10 border border-amber-400/20 text-amber-400 hover:bg-amber-400 hover:text-slate-950 transition-all font-bold rounded-lg text-[10px] uppercase">
-          Simulate Successful Scan Complete
-        </button>
-      </div>
-
-      <!-- Step 3: CARD FORM -->
-      <form *ngIf="checkoutStep === 'CARD'" (ngSubmit)="validateCardAndPay()" class="space-y-4 text-xs">
-        <div *ngIf="cardError" class="p-2.5 rounded-lg bg-red-950/40 border border-red-500/20 text-red-400 text-[10px]">
-          {{ cardError }}
-        </div>
-
-        <div>
-          <label class="block text-slate-400 font-semibold uppercase text-[9px] tracking-wider mb-1.5">Cardholder Name</label>
-          <input 
-            type="text" 
-            [(ngModel)]="cardForm.holderName" 
-            name="holderName" 
-            required 
-            placeholder="e.g. AMIT PRASAD" 
-            class="w-full px-3 py-2.5 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none focus:border-amber-400 text-xs"
-          >
-        </div>
-
-        <div>
-          <label class="block text-slate-400 font-semibold uppercase text-[9px] tracking-wider mb-1.5">Debit / Credit Card Number</label>
-          <input 
-            type="text" 
-            [(ngModel)]="cardForm.cardNumber" 
-            name="cardNumber" 
-            required 
-            maxlength="19" 
-            placeholder="4111 2222 3333 4444" 
-            class="w-full px-3 py-2.5 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none focus:border-amber-400 text-xs font-mono"
-          >
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-slate-400 font-semibold uppercase text-[9px] tracking-wider mb-1.5">Expiry Date</label>
-            <input 
-              type="text" 
-              [(ngModel)]="cardForm.expiry" 
-              name="expiry" 
-              required 
-              maxlength="5" 
-              placeholder="MM/YY" 
-              class="w-full px-3 py-2.5 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none focus:border-amber-400 text-xs font-mono"
-            >
-          </div>
-          <div>
-            <label class="block text-slate-400 font-semibold uppercase text-[9px] tracking-wider mb-1.5">CVV Code</label>
-            <input 
-              type="password" 
-              [(ngModel)]="cardForm.cvv" 
-              name="cvv" 
-              required 
-              maxlength="3" 
-              placeholder="•••" 
-              class="w-full px-3 py-2.5 rounded bg-slate-900 border border-slate-700 text-slate-100 outline-none focus:border-amber-400 text-xs font-mono text-center"
-            >
-          </div>
-        </div>
-
-        <button type="submit" class="w-full py-3 rounded-lg btn-gold font-bold transition-all text-xs">
-          Authorize Card & Pay ₹{{ getCheckoutAmount() | number:'1.2-2' }}
-        </button>
-      </form>
-
-      <!-- Step 4: OTP Screen (3DS Verification simulation) -->
-      <form *ngIf="checkoutStep === 'OTP'" (ngSubmit)="verifyOtpAndPay()" class="space-y-4 text-xs">
-        <div class="text-center space-y-1.5">
-          <p class="font-bold text-white text-sm">3D Secure OTP verification</p>
-          <p class="text-slate-400 text-[10px]">A one-time passcode has been sent to the cardholder's mobile number.</p>
-        </div>
-
-        <div *ngIf="otpError" class="p-2.5 rounded-lg bg-red-950/40 border border-red-500/20 text-red-400 text-center text-[10px]">
-          {{ otpError }}
-        </div>
-
-        <div>
-          <input 
-            type="text" 
-            [(ngModel)]="otpCode" 
-            name="otpCode" 
-            required 
-            maxlength="6" 
-            placeholder="123456" 
-            class="w-36 mx-auto block px-3 py-3 rounded-xl bg-slate-950 border border-slate-700 text-center text-slate-100 outline-none focus:border-amber-400 text-lg font-mono font-bold tracking-widest"
-          >
-          <span class="block text-center text-[9px] text-slate-500 mt-1.5 font-semibold">Enter any 6-digit number to authorize checkout</span>
-        </div>
-
-        <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800/80 pt-3">
-          <span>Resend code in: <strong class="font-mono text-white">{{ otpTimer }}s</strong></span>
-          <button type="button" (click)="resendOtp()" [disabled]="otpTimer > 0" class="text-amber-400 font-bold hover:underline disabled:text-slate-600 disabled:no-underline">
-            Resend OTP
-          </button>
-        </div>
-
-        <button type="submit" class="w-full py-3 rounded-lg btn-gold font-bold transition-all text-xs">
-          Submit passcode & authenticate
-        </button>
-      </form>
-
-    </ng-container>
- 
-    <!-- PROCESSING Checkout View -->
-    <ng-container *ngIf="checkoutStatus === 'PROCESSING'">
-      <div class="flex flex-col items-center justify-center py-10 space-y-6">
-        <div class="relative w-16 h-16 flex items-center justify-center">
-          <div class="absolute inset-0 border-t-2 border-amber-400 rounded-full animate-spin"></div>
-          <svg class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </div>
-        
-        <div class="text-center space-y-2">
-          <p class="text-sm font-bold text-white">Connecting Secure Gateway...</p>
-          <p class="text-slate-400 text-[10px]">
-            <span *ngIf="selectedUpiApp">Redirecting user to {{ selectedUpiApp }} application...</span>
-            <span *ngIf="!selectedUpiApp">Authorizing transaction on secure bank servers...</span>
-          </p>
-        </div>
-
-        <div class="w-full bg-slate-950 border border-slate-800 rounded-full h-2.5 overflow-hidden">
-          <div [style.width.%]="checkoutProgress" class="bg-amber-400 h-full rounded-full transition-all duration-300"></div>
-        </div>
-      </div>
-    </ng-container>
- 
-    <!-- SUCCESS Checkout View -->
-    <ng-container *ngIf="checkoutStatus === 'SUCCESS'">
-      <div class="flex flex-col items-center justify-center py-8 space-y-5 text-center">
-        <div class="h-14 w-14 rounded-full bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400 animate-bounce">
-          <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-
+      <!-- Header / Close button on Mobile summary -->
+      <div class="flex justify-between items-center md:block">
         <div class="space-y-1">
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Payment Transaction successful</h3>
-          <p class="text-slate-400 text-xs">Your payment of ₹{{ getCheckoutAmount() | number:'1.2-2' }} has been verified.</p>
+          <span class="text-[9px] uppercase tracking-widest font-extrabold text-amber-500">Secure Checkout</span>
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Order Summary</h3>
+        </div>
+        <!-- Close button for mobile inside left panel header (visible on mobile only) -->
+        <button *ngIf="checkoutStatus === 'IDLE'" (click)="closeCheckoutModal()" class="md:hidden text-slate-400 hover:text-white text-xl font-bold select-none">&times;</button>
+      </div>
+
+      <!-- Ledger Items list -->
+      <div class="space-y-4">
+        <!-- Renewing Membership -->
+        <div *ngIf="selectedPlan" class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-bold text-white text-xs">Membership Upgrade</p>
+              <p class="text-[10px] text-amber-400 mt-0.5">{{ selectedPlan.name }}</p>
+            </div>
+            <span class="text-[9px] uppercase font-bold text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded">
+              {{ selectedPlan.durationDays }} Days
+            </span>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-relaxed">{{ selectedPlan.description }}</p>
         </div>
 
-        <button (click)="closeCheckoutModal()" class="w-full py-2.5 rounded btn-gold text-xs font-bold mt-2 select-none">
-          Return to E-Shop
-        </button>
+        <!-- Product Cart Items -->
+        <div *ngIf="!selectedPlan" class="space-y-2.5">
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Items in Cart</p>
+          <div class="max-h-40 overflow-y-auto space-y-2 pr-1">
+            <div *ngFor="let item of cart" class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex justify-between items-center text-xs">
+              <div>
+                <p class="font-bold text-slate-200 truncate max-w-[140px]">{{ item.name }}</p>
+                <p class="text-[9px] text-slate-400 mt-0.5">Quantity: {{ item.quantity }}</p>
+              </div>
+              <span class="font-semibold text-slate-300 text-[11px]">₹{{ item.price * item.quantity | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </ng-container>
+
+      <!-- Live Card Visual Preview (Only visible if using Card method and IDLE) -->
+      <div *ngIf="activeTab === 'CARD' && checkoutStep !== 'OTP' && checkoutStatus === 'IDLE'" class="hidden sm:block">
+        <div class="payment-card border border-slate-700/50">
+          <div class="flex justify-between items-center">
+            <div class="payment-card-chip"></div>
+            <span class="text-[10px] tracking-widest font-extrabold uppercase text-slate-400">
+              {{ getCardType() === 'visa' ? 'VISA' : 
+                 getCardType() === 'mastercard' ? 'MASTERCARD' : 
+                 getCardType() === 'rupay' ? 'RUPAY' : 
+                 getCardType() === 'maestro' ? 'MAESTRO' : 'SECURE CARD' }}
+            </span>
+          </div>
+          <div class="my-3 text-center">
+            <div class="text-xs sm:text-sm font-mono tracking-[0.2em] text-white">
+              {{ cardForm.cardNumber || '•••• •••• •••• ••••' }}
+            </div>
+          </div>
+          <div class="flex justify-between items-end">
+            <div>
+              <span class="text-[8px] uppercase tracking-wider text-slate-500 block">Cardholder</span>
+              <span class="text-[9px] font-mono uppercase text-slate-200 truncate block max-w-[130px]">
+                {{ cardForm.holderName || 'AMIT PRASAD' }}
+              </span>
+            </div>
+            <div class="text-right">
+              <span class="text-[8px] uppercase tracking-wider text-slate-500 block">Expires</span>
+              <span class="text-[9px] font-mono text-slate-200 block">
+                {{ cardForm.expiry || 'MM/YY' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust Badges & Total Due -->
+      <div class="space-y-4 pt-3 border-t border-slate-850">
+        <div class="flex justify-between items-end">
+          <span class="text-[10px] uppercase font-bold text-slate-400">Total Amount Due</span>
+          <span class="text-xl font-extrabold text-white">₹{{ getCheckoutAmount() | number:'1.2-2' }}</span>
+        </div>
+        
+        <div class="flex items-center gap-2 text-[9px] text-slate-500">
+          <svg class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <span>256-bit SSL secure payment transmission</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL: PAYMENT GATEWAY & INPUTS (60% width) -->
+    <div class="w-full md:w-7/12 p-5 md:p-6 flex flex-col justify-between space-y-4 relative min-h-[380px] bg-slate-900/50">
+      
+      <!-- Top header (Close button for desktop) -->
+      <div class="hidden md:flex justify-between items-center border-b border-slate-800 pb-2.5">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Select Payment Option</h3>
+        <button *ngIf="checkoutStatus === 'IDLE'" (click)="closeCheckoutModal()" class="text-slate-400 hover:text-white text-lg font-bold select-none">&times;</button>
+      </div>
+
+      <!-- IDLE Checkout View -->
+      <ng-container *ngIf="checkoutStatus === 'IDLE'">
+        
+        <!-- Multi-Tab Selectors (Responsive tab navigation) -->
+        <div class="grid grid-cols-2 gap-2 md:flex md:flex-col md:space-y-2 flex-shrink-0">
+          
+          <button 
+            [disabled]="checkoutStep === 'OTP'" 
+            (click)="setTab('CARD')" 
+            [class.active]="activeTab === 'CARD'"
+            class="pay-tab-btn text-[10px] md:text-xs select-none disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <span>Cards</span>
+          </button>
+
+          <button 
+            [disabled]="checkoutStep === 'OTP'" 
+            (click)="setTab('UPI')" 
+            [class.active]="activeTab === 'UPI'"
+            class="pay-tab-btn text-[10px] md:text-xs select-none disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+            </svg>
+            <span>UPI Pay</span>
+          </button>
+
+          <button 
+            [disabled]="checkoutStep === 'OTP'" 
+            (click)="setTab('RAZORPAY')" 
+            [class.active]="activeTab === 'RAZORPAY'"
+            class="pay-tab-btn text-[10px] md:text-xs select-none disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Razorpay Sim</span>
+          </button>
+
+          <button 
+            [disabled]="checkoutStep === 'OTP'" 
+            (click)="setTab('PAYTM')" 
+            [class.active]="activeTab === 'PAYTM'"
+            class="pay-tab-btn text-[10px] md:text-xs select-none disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>Paytm Wallet</span>
+          </button>
+
+        </div>
+
+        <!-- TAB CONTENT AREA -->
+        <div class="flex-grow pt-2">
+          
+          <!-- TAB 1: CARD PAYMENTS -->
+          <div *ngIf="activeTab === 'CARD'" class="space-y-4">
+            
+            <!-- Card Inputs Form -->
+            <form *ngIf="checkoutStep === 'CARD'" (ngSubmit)="validateCardAndPay()" class="space-y-3.5">
+              <div *ngIf="cardError" class="p-2.5 rounded-lg bg-red-950/40 border border-red-500/20 text-red-400 text-[10px]">
+                {{ cardError }}
+              </div>
+
+              <div class="grid grid-cols-1 gap-3">
+                <!-- Cardholder Name -->
+                <div>
+                  <label class="block text-slate-400 font-semibold uppercase text-[9px] tracking-wider mb-1">Cardholder Name</label>
+                  <input 
+                    type="text" 
+                    [(ngModel)]="cardForm.holderName" 
+                    name="holderName" 
+                    required 
+                    placeholder="AMIT PRASAD" 
+                    autocapitalize="characters"
+                    class="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 text-xs transition-all"
+                  >
+                </div>
+
+                <!-- Card Number -->
+                <div>
+                  <label class="block text-slate-400 font-semibold uppercase text-[9px] tracking-wider mb-1">Card Number</label>
+                  <div class="relative">
+                    <input 
+                      type="text" 
+                      [(ngModel)]="cardForm.cardNumber" 
+                      name="cardNumber" 
+                      required 
+                      maxlength="19" 
+                      inputmode="numeric" 
+                      pattern="[0-9]*" 
+                      (input)="formatCardNumber()"
+                      placeholder="4111 2222 3333 4444" 
+                      class="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 text-xs font-mono tracking-wider transition-all"
+                    >
+                    <!-- Input logo icon for credit card -->
+                    <div class="absolute right-3 top-2.5 text-slate-500">
+                      <span class="text-[9px] font-extrabold uppercase text-amber-500 tracking-wider">
+                        {{ getCardType() === 'visa' ? 'VISA' : 
+                           getCardType() === 'mastercard' ? 'MC' : 
+                           getCardType() === 'rupay' ? 'RUPAY' : 
+                           getCardType() === 'maestro' ? 'MAESTRO' : '' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Expiry & CVV Row -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-slate-400 font-semibold uppercase text-[9px] tracking-wider mb-1">Expiry Date</label>
+                  <input 
+                    type="text" 
+                    [(ngModel)]="cardForm.expiry" 
+                    name="expiry" 
+                    required 
+                    maxlength="5" 
+                    inputmode="numeric"
+                    (input)="formatExpiry()"
+                    placeholder="MM/YY" 
+                    class="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 text-xs font-mono text-center tracking-wider transition-all"
+                  >
+                </div>
+                <div>
+                  <label class="block text-slate-400 font-semibold uppercase text-[9px] tracking-wider mb-1">CVV Code</label>
+                  <input 
+                    type="password" 
+                    [(ngModel)]="cardForm.cvv" 
+                    name="cvv" 
+                    required 
+                    maxlength="3" 
+                    inputmode="numeric"
+                    (input)="formatCvv()"
+                    placeholder="•••" 
+                    class="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 text-xs font-mono text-center tracking-widest transition-all"
+                  >
+                </div>
+              </div>
+
+              <!-- Submit button -->
+              <button type="submit" class="w-full py-3 rounded-xl btn-gold font-bold transition-all text-xs shadow-lg mt-1 select-none">
+                Pay ₹{{ getCheckoutAmount() | number:'1.2-2' }} Securely
+              </button>
+            </form>
+
+            <!-- Card Step 2: OTP Bank Verification (3DS Sim) -->
+            <form *ngIf="checkoutStep === 'OTP'" (ngSubmit)="verifyOtpAndPay()" class="space-y-4">
+              <div class="text-center p-3 rounded-xl bg-amber-500/5 border border-amber-500/15 space-y-1">
+                <p class="font-bold text-white text-[11px] uppercase tracking-wide">3D Secure OTP verification</p>
+                <p class="text-slate-400 text-[9px] leading-relaxed">A one-time passcode has been generated for validation.</p>
+              </div>
+
+              <div *ngIf="otpError" class="p-2.5 rounded-lg bg-red-950/40 border border-red-500/20 text-red-400 text-center text-[10px]">
+                {{ otpError }}
+              </div>
+
+              <div class="space-y-2 text-center">
+                <input 
+                  type="text" 
+                  [(ngModel)]="otpCode" 
+                  name="otpCode" 
+                  required 
+                  maxlength="6" 
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="••••••" 
+                  class="w-44 mx-auto block px-3 py-3 rounded-xl bg-slate-950 border border-slate-800 text-center text-slate-100 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 text-xl font-mono font-bold tracking-[0.4em]"
+                >
+                <span class="block text-[9px] text-slate-500 font-semibold">Enter any 6-digit number to authorize</span>
+              </div>
+
+              <!-- OTP Resend & Timer -->
+              <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800 pt-3">
+                <span>Resend code in: <strong class="font-mono text-white">{{ otpTimer }}s</strong></span>
+                <button type="button" (click)="resendOtp()" [disabled]="otpTimer > 0" class="text-amber-400 font-bold hover:underline disabled:text-slate-600 disabled:no-underline select-none">
+                  Resend OTP
+                </button>
+              </div>
+
+              <button type="submit" class="w-full py-3 rounded-xl btn-gold font-bold transition-all text-xs select-none">
+                Submit Passcode
+              </button>
+            </form>
+
+          </div>
+
+          <!-- TAB 2: UPI PAYMENTS -->
+          <div *ngIf="activeTab === 'UPI'" class="space-y-4 flex flex-col items-center">
+            
+            <!-- QR Scanner Frame -->
+            <div class="p-2.5 bg-white rounded-2xl border border-slate-700 shadow-xl mt-1 select-none">
+              <img [src]="getUpiQrUrl()" class="h-36 w-36 object-contain" alt="UPI QR Code Payment">
+            </div>
+            
+            <p class="text-center text-[9px] text-slate-400 max-w-xs leading-relaxed">
+              Scan the QR using BHIM, GPay, PhonePe, or Paytm apps. Amount:
+              <strong class="text-white">₹{{ getCheckoutAmount() | number:'1.2-2' }}</strong>
+            </p>
+
+            <!-- Redirect to native UPI apps (Great for mobile users!) -->
+            <div class="w-full space-y-2 border-t border-slate-850 pt-3">
+              <label class="block text-slate-500 font-bold uppercase text-[8px] tracking-wider text-center">Or pay instantly via apps</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button (click)="simulateUpiRedirect('PhonePe')" class="py-2 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-center text-[9px] font-bold text-slate-200 select-none">
+                  PhonePe
+                </button>
+                <button (click)="simulateUpiRedirect('Google Pay')" class="py-2 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-center text-[9px] font-bold text-slate-200 select-none">
+                  Google Pay
+                </button>
+                <button (click)="simulateUpiRedirect('Paytm')" class="py-2 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-center text-[9px] font-bold text-slate-200 select-none">
+                  Paytm App
+                </button>
+              </div>
+            </div>
+
+            <!-- Wait Timer bar -->
+            <div class="flex items-center justify-between w-full text-[9px] border-t border-slate-850 pt-2.5 text-slate-400">
+              <span class="flex items-center gap-1">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                Awaiting payment signal...
+              </span>
+              <span class="font-mono text-amber-400 font-bold">{{ upiTimer }}s</span>
+            </div>
+            
+            <!-- Sandbox bypass button -->
+            <button (click)="simulateUpiRedirect('QR Scan Callback')" class="w-full py-2 bg-amber-400/10 border border-amber-400/20 text-amber-400 hover:bg-amber-400 hover:text-slate-950 transition-all font-bold rounded-lg text-[9px] uppercase select-none">
+              Simulate Successful Scan callback
+            </button>
+          </div>
+
+          <!-- TAB 3: RAZORPAY SIMULATION -->
+          <div *ngIf="activeTab === 'RAZORPAY'" class="space-y-5 py-4 text-center">
+            <div class="h-12 w-12 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto text-slate-400">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div class="space-y-1">
+              <p class="font-bold text-white text-xs">Razorpay Secure Sandbox</p>
+              <p class="text-slate-400 text-[10px] max-w-xs mx-auto leading-relaxed">
+                You will be redirected to the secure simulated Razorpay checkout window to complete the transaction.
+              </p>
+            </div>
+            <button (click)="processMockPayment()" class="w-full py-3 rounded-xl btn-gold text-xs font-bold transition-all shadow-lg select-none">
+              Proceed via Razorpay
+            </button>
+          </div>
+
+          <!-- TAB 4: PAYTM SIMULATION -->
+          <div *ngIf="activeTab === 'PAYTM'" class="space-y-5 py-4 text-center">
+            <div class="h-12 w-12 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto text-slate-400">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div class="space-y-1">
+              <p class="font-bold text-white text-xs">Paytm Wallet Integration</p>
+              <p class="text-slate-400 text-[10px] max-w-xs mx-auto leading-relaxed">
+                Pay seamlessly using your registered Paytm phone number wallet or UPI link connection.
+              </p>
+            </div>
+            <button (click)="processMockPayment()" class="w-full py-3 rounded-xl btn-gold text-xs font-bold transition-all shadow-lg select-none">
+              Proceed via Paytm
+            </button>
+          </div>
+
+        </div>
+
+      </ng-container>
+
+      <!-- PROCESSING Checkout View -->
+      <ng-container *ngIf="checkoutStatus === 'PROCESSING'">
+        <div class="flex flex-col items-center justify-center py-10 space-y-6 flex-grow">
+          <div class="relative w-16 h-16 flex items-center justify-center">
+            <div class="absolute inset-0 border-t-2 border-amber-400 rounded-full animate-spin"></div>
+            <svg class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          
+          <div class="text-center space-y-2">
+            <p class="text-xs font-bold text-white uppercase tracking-wider">Connecting Secure Gateway...</p>
+            <p class="text-slate-400 text-[9px]">
+              <span *ngIf="selectedUpiApp">Redirecting user to {{ selectedUpiApp }} application...</span>
+              <span *ngIf="!selectedUpiApp">Authorizing transaction on secure bank servers...</span>
+            </p>
+          </div>
+
+          <div class="w-full bg-slate-950 border border-slate-800 rounded-full h-2 overflow-hidden">
+            <div [style.width.%]="checkoutProgress" class="bg-amber-400 h-full rounded-full transition-all duration-300"></div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- SUCCESS Checkout View -->
+      <ng-container *ngIf="checkoutStatus === 'SUCCESS'">
+        <div class="flex flex-col items-center justify-center py-6 space-y-5 text-center flex-grow">
+          <div class="h-14 w-14 rounded-full bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400 animate-bounce">
+            <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+
+          <div class="space-y-1.5">
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Payment successful</h3>
+            <p class="text-slate-400 text-[10px] max-w-xs">Your payment of ₹{{ getCheckoutAmount() | number:'1.2-2' }} has been successfully verified.</p>
+          </div>
+
+          <button (click)="closeCheckoutModal()" class="w-full py-3 rounded-xl btn-gold text-xs font-bold mt-2 select-none shadow-lg">
+            Return to E-Shop
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- FAILED Checkout View -->
+      <ng-container *ngIf="checkoutStatus === 'FAILED'">
+        <div class="flex flex-col items-center justify-center py-6 space-y-5 text-center flex-grow">
+          <div class="h-14 w-14 rounded-full bg-red-950 border border-red-500/30 flex items-center justify-center text-red-400">
+            <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+
+          <div class="space-y-1.5">
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Transaction Failed</h3>
+            <p class="text-red-400 text-[10px] max-w-xs">{{ errorMessage }}</p>
+          </div>
+
+          <button (click)="closeCheckoutModal()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold mt-2 select-none">
+            Close & Try Again
+          </button>
+        </div>
+      </ng-container>
+
+    </div>
 
   </div>
 </div>
