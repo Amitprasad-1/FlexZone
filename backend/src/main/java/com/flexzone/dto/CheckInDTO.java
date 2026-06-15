@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 public class CheckInDTO {
     private Long memberId;
     private String memberName;
+    private String memberUsername;
+    private String membershipPlanName;
     private LocalDateTime checkInTime;
     private String verifiedByAdminName;
     private String profilePicture;

@@ -146,3 +146,16 @@ h1, h2, h3, h4, h5, h6 {
 .blink-red-row td:last-child {
   border-right: 1.5px solid rgba(239, 68, 68, 0.2) !important;
 }
+
+/* Webcam contactless QR scanner styling overrides */
+#reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 0.75rem;
+}
+
+#reader {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}

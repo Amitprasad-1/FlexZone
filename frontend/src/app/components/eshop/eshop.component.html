@@ -61,9 +61,10 @@
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div *ngFor="let prod of products" class="p-5 rounded-2xl glass-panel border border-slate-800 flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all">
               <div class="space-y-3">
-                <!-- Mock Image wrapper -->
+                <!-- Product Image Wrapper -->
                 <div class="aspect-[4/3] bg-slate-950 rounded-xl flex items-center justify-center border border-slate-800 text-slate-700 overflow-hidden relative">
-                  <svg class="h-10 w-10 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <img *ngIf="prod.imageUrl" [src]="'/' + prod.imageUrl" class="w-full h-full object-cover select-none" [alt]="prod.name">
+                  <svg *ngIf="!prod.imageUrl" class="h-10 w-10 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
                   <span *ngIf="prod.stock <= 0" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center text-xs font-bold text-red-500 uppercase tracking-widest">

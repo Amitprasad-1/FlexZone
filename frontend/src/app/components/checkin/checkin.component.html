@@ -14,25 +14,39 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- QR VIEW FINDER SIMULATION -->
+    <!-- CONTACTLESS WEBCAM SCAN TERMINAL -->
     <div class="lg:col-span-1 p-6 rounded-2xl glass-panel space-y-5 h-fit">
-      <h2 class="text-base font-bold text-white uppercase tracking-wider">Simulated scan terminal</h2>
+      <h2 class="text-base font-bold text-white uppercase tracking-wider">Contactless Scan Terminal</h2>
       
-      <!-- Camera square simulator -->
+      <!-- Camera Viewport -->
       <div class="relative aspect-square w-full bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex flex-col items-center justify-center p-4">
-        <!-- Viewfinder Corners -->
-        <div class="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-amber-400"></div>
-        <div class="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-amber-400"></div>
-        <div class="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-amber-400"></div>
-        <div class="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-amber-400"></div>
+        <!-- Live webcam video target element -->
+        <div [class.hidden]="!isCameraActive" id="reader" class="absolute inset-0 w-full h-full z-10"></div>
 
-        <!-- Scanning red laser line animation -->
-        <div class="absolute left-4 right-4 h-0.5 bg-red-500 opacity-60 animate-bounce top-1/2"></div>
+        <!-- Viewfinder Corners (layered above camera stream) -->
+        <div class="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-amber-400 z-20"></div>
+        <div class="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-amber-400 z-20"></div>
+        <div class="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-amber-400 z-20"></div>
+        <div class="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-amber-400 z-20"></div>
+
+        <!-- Pulse Laser Scan Line (layered above camera stream) -->
+        <div *ngIf="isCameraActive" class="absolute left-4 right-4 h-0.5 bg-red-500 opacity-80 animate-bounce top-1/2 z-20 shadow-[0_0_10px_rgba(239,68,68,1)]"></div>
         
-        <svg class="h-12 w-12 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-        </svg>
-        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mt-4">Place code under scanner</span>
+        <!-- Offline Mock Camera Display -->
+        <ng-container *ngIf="!isCameraActive">
+          <svg class="h-12 w-12 text-slate-800 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+          </svg>
+          <span class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mt-4">Scanner Offline</span>
+          <button type="button" (click)="toggleCamera()" class="mt-4 px-3.5 py-2 rounded-lg bg-amber-400 text-slate-950 font-extrabold text-[10px] uppercase hover:bg-amber-300 transition-all select-none shadow-md">
+            Activate Scanner Camera
+          </button>
+        </ng-container>
+
+        <!-- Toggle Control to deactivate scanning -->
+        <button type="button" *ngIf="isCameraActive" (click)="toggleCamera()" class="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg bg-red-650 hover:bg-red-750 text-white font-extrabold text-[10px] uppercase transition-all z-30 shadow-[0_4px_15px_rgba(239,68,68,0.4)] select-none">
+          Stop Scanner
+        </button>
       </div>
 
       <!-- Scan submission -->
@@ -69,23 +83,36 @@
         <table *ngIf="todayCheckIns.length > 0" class="w-full text-left border-collapse text-xs">
           <thead>
             <tr class="border-b border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+              <th class="py-3 w-12">ID</th>
               <th class="py-3">Member Name</th>
+              <th class="py-3">Active Plan</th>
               <th class="py-3">Check-In Time</th>
               <th class="py-3">Verified By (Staff)</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/80">
             <tr *ngFor="let checkin of todayCheckIns" class="text-slate-300">
-              <td class="py-3 font-semibold text-slate-100 flex items-center gap-3">
-                <img *ngIf="checkin.profilePicture" [src]="checkin.profilePicture" class="h-8 w-8 rounded-full object-cover border border-slate-800 select-none">
-                <div *ngIf="!checkin.profilePicture" class="h-8 w-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500 font-bold uppercase select-none">
-                  {{ checkin.memberName.charAt(0) }}
+              <td class="py-3 font-mono font-bold text-slate-500">#{{ checkin.memberId }}</td>
+              <td class="py-3 font-semibold text-slate-100">
+                <div class="flex items-center gap-3">
+                  <img *ngIf="checkin.profilePicture" [src]="checkin.profilePicture" class="h-8 w-8 rounded-full object-cover border border-slate-800 select-none">
+                  <div *ngIf="!checkin.profilePicture" class="h-8 w-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500 font-bold uppercase select-none">
+                    {{ checkin.memberName.charAt(0) }}
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-200">{{ checkin.memberName }}</p>
+                    <p class="text-[10px] text-slate-500 font-mono">@{{ checkin.memberUsername }}</p>
+                  </div>
                 </div>
-                <span>{{ checkin.memberName }}</span>
               </td>
-              <td class="py-3">{{ checkin.checkInTime | date:'mediumTime' }}</td>
               <td class="py-3">
-                <span class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px] text-slate-400">
+                <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-400 font-semibold">
+                  {{ checkin.membershipPlanName }}
+                </span>
+              </td>
+              <td class="py-3 font-medium text-slate-300">{{ checkin.checkInTime | date:'mediumTime' }}</td>
+              <td class="py-3">
+                <span class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px] text-slate-400 font-bold">
                   {{ checkin.verifiedByAdminName }}
                 </span>
               </td>
