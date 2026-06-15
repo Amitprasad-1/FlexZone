@@ -19,4 +19,5 @@ public class MemberProfileDTO {
     private Long assignedTrainerId;
     private String assignedTrainerName;
     private String profilePicture;
+    private String paymentStatus;
 }

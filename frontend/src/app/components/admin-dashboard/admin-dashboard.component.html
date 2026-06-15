@@ -195,12 +195,15 @@
             <th class="p-4">Username / Email</th>
             <th class="p-4">Membership Plan</th>
             <th class="p-4">Start / End Date</th>
+            <th class="p-4">Payment</th>
             <th class="p-4">Status</th>
             <th class="p-4 text-right">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800">
-          <tr *ngFor="let m of members" class="hover:bg-slate-800/20 text-slate-300">
+          <tr *ngFor="let m of members" 
+              [class.blink-red-row]="m.paymentStatus === 'PAID' && m.membershipStatus !== 'ACTIVE'"
+              class="hover:bg-slate-800/20 text-slate-300 transition-all">
             <td class="p-4 font-semibold text-slate-100 flex items-center gap-3">
               <img *ngIf="m.profilePicture" [src]="m.profilePicture" class="h-8 w-8 rounded-full object-cover border border-slate-700 select-none">
               <div *ngIf="!m.profilePicture" class="h-8 w-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-500 font-bold uppercase select-none">
@@ -219,6 +222,19 @@
               <p *ngIf="m.membershipStartDate">{{ m.membershipStartDate | date:'mediumDate' }}</p>
               <p *ngIf="m.membershipEndDate" class="text-[10px] text-slate-500">to {{ m.membershipEndDate | date:'mediumDate' }}</p>
               <span *ngIf="!m.membershipStartDate" class="text-slate-600">N/A</span>
+            </td>
+            <td class="p-4">
+              <span 
+                [class.bg-emerald-950]="m.paymentStatus === 'PAID'"
+                [class.text-emerald-400]="m.paymentStatus === 'PAID'"
+                [class.border-emerald-500/20]="m.paymentStatus === 'PAID'"
+                [class.bg-red-950]="m.paymentStatus === 'UNPAID'"
+                [class.text-red-400]="m.paymentStatus === 'UNPAID'"
+                [class.border-red-500/20]="m.paymentStatus === 'UNPAID'"
+                class="px-2 py-0.5 rounded font-bold uppercase text-[9px] border"
+              >
+                {{ m.paymentStatus }}
+              </span>
             </td>
             <td class="p-4">
               <span 

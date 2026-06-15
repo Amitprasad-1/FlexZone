@@ -69,7 +69,7 @@ public class EShopService {
             LocalDate start = (currentEnd != null && currentEnd.isAfter(LocalDate.now())) ? currentEnd : LocalDate.now();
             
             member.setMembershipPlan(plan);
-            member.setMembershipStatus("ACTIVE");
+            member.setMembershipStatus("PENDING");
             member.setMembershipStartDate(start);
             member.setMembershipEndDate(start.plusDays(plan.getDurationDays()));
             

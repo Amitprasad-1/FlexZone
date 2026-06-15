@@ -251,6 +251,13 @@ public class AdminService {
     }
 
     private MemberProfileDTO convertToMemberDTO(MemberProfile profile) {
+        boolean hasPaymentRecord = paymentRepository.findAll().stream()
+                .anyMatch(p -> p.getMember().getId().equals(profile.getId()) 
+                          && "MEMBERSHIP_RENEWAL".equalsIgnoreCase(p.getPaymentType()) 
+                          && "SUCCESS".equalsIgnoreCase(p.getStatus()));
+
+        String paymentStatus = (hasPaymentRecord || "ACTIVE".equals(profile.getMembershipStatus())) ? "PAID" : "UNPAID";
+
         return MemberProfileDTO.builder()
                 .id(profile.getId())
                 .username(profile.getUser().getUsername())
@@ -264,6 +271,7 @@ public class AdminService {
                 .assignedTrainerId(profile.getAssignedTrainer() != null ? profile.getAssignedTrainer().getId() : null)
                 .assignedTrainerName(profile.getAssignedTrainer() != null ? profile.getAssignedTrainer().getUser().getFullName() : "Unassigned")
                 .profilePicture(profile.getUser().getProfilePicture())
+                .paymentStatus(paymentStatus)
                 .build();
     }
 }

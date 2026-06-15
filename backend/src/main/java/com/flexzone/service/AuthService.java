@@ -19,9 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class AuthService {
+
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -124,5 +126,9 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    public List<MembershipPlan> getAllPlans() {
+        return membershipPlanRepository.findAll();
     }
 }

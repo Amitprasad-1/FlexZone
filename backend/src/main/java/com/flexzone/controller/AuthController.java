@@ -6,11 +6,13 @@ import com.flexzone.dto.SignupRequest;
 import com.flexzone.dto.ForgotPasswordRequest;
 import com.flexzone.dto.ResetPasswordRequest;
 import com.flexzone.entity.User;
+import com.flexzone.entity.MembershipPlan;
 import com.flexzone.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -57,5 +59,10 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/plans")
+    public ResponseEntity<List<MembershipPlan>> getPlans() {
+        return ResponseEntity.ok(authService.getAllPlans());
     }
 }

@@ -120,3 +120,29 @@ h1, h2, h3, h4, h5, h6 {
 .animate-float {
   animation: float-soft 3s infinite alternate ease-in-out;
 }
+
+/* Blinking red border for paid but inactive members */
+@keyframes blink-red-border {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.2);
+    background-color: rgba(239, 68, 68, 0.02);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 0.85);
+    background-color: rgba(239, 68, 68, 0.08);
+  }
+}
+
+.blink-red-row td {
+  border-top: 1.5px solid rgba(239, 68, 68, 0.2) !important;
+  border-bottom: 1.5px solid rgba(239, 68, 68, 0.2) !important;
+  animation: blink-red-border 1.5s infinite ease-in-out;
+}
+
+.blink-red-row td:first-child {
+  border-left: 1.5px solid rgba(239, 68, 68, 0.2) !important;
+}
+
+.blink-red-row td:last-child {
+  border-right: 1.5px solid rgba(239, 68, 68, 0.2) !important;
+}
