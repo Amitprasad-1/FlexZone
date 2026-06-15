@@ -12,7 +12,7 @@ export class CheckInService {
 
   constructor(private http: HttpClient) {}
 
-  scanCheckIn(memberId: number): Observable<any> {
+  scanCheckIn(memberId: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/scan`, { memberId });
   }
 

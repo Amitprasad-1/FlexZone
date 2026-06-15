@@ -11,7 +11,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './checkin.component.html'
 })
 export class CheckInComponent implements OnInit {
-  memberIdInput: number | null = null;
+  memberIdInput: string = '';
   todayCheckIns: any[] = [];
   loading = false;
   errorMessage = '';
@@ -34,18 +34,18 @@ export class CheckInComponent implements OnInit {
   }
 
   onSubmitCheckIn(): void {
-    if (!this.memberIdInput) {
+    if (!this.memberIdInput || !this.memberIdInput.trim()) {
       return;
     }
     this.loading = true;
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.checkInService.scanCheckIn(this.memberIdInput).subscribe({
+    this.checkInService.scanCheckIn(this.memberIdInput.trim()).subscribe({
       next: data => {
         this.loading = false;
         this.successMessage = `Attendance logged successfully for ${data.memberName}!`;
-        this.memberIdInput = null;
+        this.memberIdInput = '';
         this.loadTodayCheckIns();
       },
       error: err => {

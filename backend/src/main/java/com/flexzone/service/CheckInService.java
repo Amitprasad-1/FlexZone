@@ -28,9 +28,36 @@ public class CheckInService {
     private UserRepository userRepository;
 
     @Transactional
-    public CheckInDTO checkInMember(Long memberId, String adminUsername) {
-        MemberProfile member = memberProfileRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+    public CheckInDTO checkInMember(String scanInput, String adminUsername) {
+        MemberProfile member = null;
+
+        // Try parsing as ID
+        try {
+            Long memberId = Long.parseLong(scanInput.trim());
+            member = memberProfileRepository.findById(memberId).orElse(null);
+        } catch (NumberFormatException e) {
+            // Not a numeric ID, fallback to username/email
+        }
+
+        if (member == null) {
+            // Try searching by username
+            User user = userRepository.findByUsername(scanInput.trim()).orElse(null);
+            if (user != null) {
+                member = memberProfileRepository.findById(user.getId()).orElse(null);
+            }
+        }
+
+        if (member == null) {
+            // Try searching by email
+            User user = userRepository.findByEmail(scanInput.trim()).orElse(null);
+            if (user != null) {
+                member = memberProfileRepository.findById(user.getId()).orElse(null);
+            }
+        }
+
+        if (member == null) {
+            throw new RuntimeException("Member not found with ID, username, or email: " + scanInput);
+        }
 
         if (!"ACTIVE".equals(member.getMembershipStatus())) {
             throw new RuntimeException("Cannot check in. Membership status is " + member.getMembershipStatus());

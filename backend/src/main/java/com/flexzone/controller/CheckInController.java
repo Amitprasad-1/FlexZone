@@ -18,13 +18,17 @@ public class CheckInController {
     private CheckInService checkInService;
 
     @PostMapping("/scan")
-    public ResponseEntity<?> scanCheckIn(Principal principal, @RequestBody Map<String, Long> request) {
+    public ResponseEntity<?> scanCheckIn(Principal principal, @RequestBody Map<String, Object> request) {
         try {
-            Long memberId = request.get("memberId");
-            if (memberId == null) {
-                return ResponseEntity.badRequest().body("Member ID is required.");
+            Object inputObj = request.get("memberId");
+            if (inputObj == null) {
+                inputObj = request.get("scanInput");
             }
-            CheckInDTO dto = checkInService.checkInMember(memberId, principal.getName());
+            if (inputObj == null || String.valueOf(inputObj).trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Scan input is required.");
+            }
+            String scanInput = String.valueOf(inputObj);
+            CheckInDTO dto = checkInService.checkInMember(scanInput, principal.getName());
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
