@@ -1,6 +1,22 @@
 <div class="min-h-screen bg-slate-950 flex flex-col font-outfit text-slate-100">
   <app-navbar></app-navbar>
 
+  <!-- Offline Connection Status Banner -->
+  <div *ngIf="isOffline" class="bg-amber-500 text-slate-950 px-4 py-2 text-center text-xs font-extrabold flex items-center justify-center gap-2 transition-all duration-300 shadow-md">
+    <svg class="h-4 w-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+    <span>Offline Mode Active: Check-ins, bookings, and payments will sync once connection is restored (Pending: {{ pendingCount }}).</span>
+  </div>
+
+  <!-- Connection Restored Sync Notification Banner -->
+  <div *ngIf="syncSuccess" class="bg-emerald-500 text-slate-950 px-4 py-2 text-center text-xs font-extrabold flex items-center justify-center gap-2 transition-all duration-300 shadow-md">
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span>Restored connection! Offline requests synced successfully.</span>
+  </div>
+
   <div class="flex flex-1">
     <app-sidebar *ngIf="showSidebar"></app-sidebar>
 

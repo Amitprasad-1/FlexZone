@@ -4,6 +4,7 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { AuthService } from './services/auth.service';
+import { OfflineSyncService } from './services/offline-sync.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -16,13 +17,28 @@ import { filter } from 'rxjs/operators';
 export class AppComponent implements OnInit {
   title = 'FlexZone Gym Management';
   showSidebar = false;
+  isOffline = false;
+  pendingCount = 0;
+  syncSuccess = false;
   
   constructor(
     public authService: AuthService,
-    private router: Router
+    private router: Router,
+    private offlineSyncService: OfflineSyncService
   ) {}
 
   ngOnInit(): void {
+    // Connection status tracking
+    this.offlineSyncService.isOffline$.subscribe(offline => {
+      this.isOffline = offline;
+    });
+    this.offlineSyncService.pendingSyncCount$.subscribe(count => {
+      this.pendingCount = count;
+    });
+    this.offlineSyncService.syncSuccess$.subscribe(success => {
+      this.syncSuccess = success;
+    });
+
     // Determine initial visibility
     this.updateSidebarVisibility(this.router.url);
 
